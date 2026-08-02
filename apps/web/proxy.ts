@@ -23,6 +23,7 @@ import {
     ACTIVE_ENSEMBLE_COOKIE_OPTIONS,
 } from "./lib/ensemble";
 import { crossOriginWriteRefused } from "./lib/csrf";
+import { SUPABASE_COOKIE_OPTIONS } from "./lib/cookies";
 import { MAX_REQUEST_BYTES } from "./lib/limits";
 import { isPublicId } from "./lib/publicId";
 import { memberBounceTarget } from "./lib/ensemblePath";
@@ -74,6 +75,7 @@ export async function proxy(request: NextRequest) {
 
     let response = NextResponse.next({ request });
     const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+        cookieOptions: SUPABASE_COOKIE_OPTIONS,
         cookies: {
             getAll() {
                 return request.cookies.getAll();

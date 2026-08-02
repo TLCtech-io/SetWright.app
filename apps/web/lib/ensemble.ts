@@ -4,17 +4,19 @@
 // their queries. Every /api/e/:ensembleId handler resolves the ensemble from its own URL
 // instead, so a stale tab cannot send a write to the wrong ensemble.
 
+import { SECURE_COOKIES } from "./cookies";
+
 export const ACTIVE_ENSEMBLE_COOKIE = "active_ensemble";
 
 // Attributes for writing the active-ensemble cookie, shared by every site that sets it (the
 // proxy, the switcher, ensemble creation) so they never drift. Secure in production so the
-// tenancy selection is never sent over plaintext, matching the auth session cookies; SameSite=Lax
-// keeps it off cross-site requests.
+// tenancy selection is never sent over plaintext, from the same constant the auth session
+// cookies now use; SameSite=Lax keeps it off cross-site requests.
 export const ACTIVE_ENSEMBLE_COOKIE_OPTIONS = {
     path: "/",
     httpOnly: true,
     sameSite: "lax" as const,
-    secure: process.env.NODE_ENV === "production",
+    secure: SECURE_COOKIES,
 };
 
 // Mock mode has no real ensembles (the in-memory store ignores tenancy), but the page

@@ -10,10 +10,15 @@
 // nowhere else), where these vars are set.
 
 import { createBrowserClient } from "@supabase/ssr";
+import { SUPABASE_COOKIE_OPTIONS } from "../cookies";
 
 export function browserClient() {
+    // This client writes the session cookie first, at sign-in, so it needs the same Secure
+    // attribute as the server sites. NODE_ENV is inlined into the client bundle, so the
+    // production check resolves here too.
     return createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        { cookieOptions: SUPABASE_COOKIE_OPTIONS },
     );
 }
