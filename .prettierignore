@@ -1,0 +1,19 @@
+# Generated auth email templates. Written by `npm run email:build` from
+# supabase/functions/_shared/email/, and byte-compared against that module by
+# `npm run email:check`, which runs inside `npm run verify`.
+#
+# Formatting them breaks the build twice over. The check fails, with a message that points at
+# the copy module rather than at the editor that actually changed the file. And the reflow is
+# not cosmetic here: HTML email is whitespace-sensitive in ways a web page is not, so newlines
+# introduced between a <td> and its content, or inside the Outlook conditional comment, change
+# what lands in the inbox.
+#
+# Edit the copy in supabase/functions/_shared/email/ and rebuild. Never edit these by hand.
+supabase/templates/
+
+# Applied migrations are immutable: the ordered set IS the schema contract, and a file that has
+# already run must never change. .claude/hooks/guard-applied-migration.sh enforces that for edits
+# made through Claude, but it cannot see a format-on-save. .vscode/settings.json sets a SQL
+# formatter as the default for [sql], so opening an applied migration and saving would rewrite it
+# with no edit intended and no guard triggered. Excluded so that cannot happen.
+supabase/migrations/

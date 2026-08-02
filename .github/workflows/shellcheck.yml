@@ -1,0 +1,36 @@
+name: ShellCheck
+
+# Three shell scripts run in this repo and two of them are load-bearing: check-config-safety.sh
+# gates CI, and the .claude hooks gate edits. A quoting bug in any of them fails open, which is
+# the worst way for a guard to fail.
+#
+# Plain shellcheck, not a SARIF-uploading third-party action. Three files do not justify adding an
+# action to the trust surface, and CodeQL has no shell support to dedupe against. Findings appear
+# in the job log and fail the check.
+on:
+    push:
+        branches: [prod-staging, main]
+    pull_request:
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+    cancel-in-progress: ${{ github.ref_name != 'main' && github.ref_name != 'prod-staging' }}
+
+permissions:
+    contents: read
+
+jobs:
+    shellcheck:
+        name: shellcheck
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
+            # shellcheck ships preinstalled on the ubuntu runner image, so there is nothing to set up.
+            - name: Check shell scripts
+              run: |
+                  if [ -z "$(git ls-files '*.sh')" ]; then
+                      echo "No shell scripts tracked."
+                      exit 0
+                  fi
+                  git ls-files '*.sh' | sed 's/^/Checking /'
+                  git ls-files -z '*.sh' | xargs -0 shellcheck --severity=warning

@@ -1,0 +1,23 @@
+{
+    "name": "@repertoire/api",
+    "version": "0.1.0",
+    "description": "A thin library over the drafter. Not an HTTP server; the route handlers live in apps/web.",
+    "private": true,
+    "type": "module",
+    "main": "./src/index.ts",
+    "exports": {
+        ".": "./src/index.ts"
+    },
+    "scripts": {
+        "typecheck": "tsc --noEmit -p tsconfig.json",
+        "test": "tsx test/endpoint.test.ts && tsx test/setlist.test.ts"
+    },
+    "dependencies": {
+        "@repertoire/core": "*"
+    },
+    "devDependencies": {
+        "@types/node": "^20.14.0",
+        "tsx": "^4.16.0",
+        "typescript": "^5.5.0"
+    }
+}

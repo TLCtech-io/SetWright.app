@@ -1,0 +1,6482 @@
+/* ============================================================================
+   Design tokens — "Ensemble" direction, Nickel (light) / Gunmetal (dark).
+   Cool editorial grey ground, one warm coral "Clay" accent, muted teal for
+   good/ready/in. Every component reads these, so the whole app themes from here.
+   ========================================================================== */
+:root {
+    /* Type — set by next/font in layout.tsx via CSS classes. */
+    --font-sans: inherit;
+    --font-mono: inherit;
+
+    /* Type scale — one ladder every component reads. Collapses the old 9-30px literal
+     spread (21 values) to 10 steps; no half-pixels. */
+    --text-micro: 10px; /* badges, flags, table headers, units */
+    --text-eyebrow: 11px; /* section eyebrows, meta lines */
+    --text-caption: 12px; /* dense controls, secondary meta */
+    --text-sm: 13px; /* secondary body, hints, notes */
+    --text-body: 14px; /* body, form fields, list rows */
+    --text-title: 16px; /* card / row / section titles */
+    --text-subhead: 18px; /* brand, large stat */
+    --text-h1: 22px; /* page titles */
+    --text-display: 28px; /* hero title */
+    --text-metric: 30px; /* mono numeric figure */
+
+    /* Line-height */
+    --leading-tight: 1.15; /* display + headings >=17px */
+    --leading-snug: 1.3; /* dense rows, labels */
+    --leading-body: 1.45; /* body copy (the default on <body>) */
+
+    /* Letter-spacing */
+    --tracking-tight: -0.01em; /* display headings */
+    --tracking-meta: 0.02em; /* mono meta / tabular lines */
+    --tracking-label: 0.07em; /* uppercase eyebrows + labels */
+
+    /* Nickel palette (light) */
+    --page: #dbe1e9;
+    --surface: #ffffff;
+    --surface-2: #eaeef2;
+    --border: #ccd3db;
+    --border-soft: #e4e8ec;
+    --divider: #dde2e7;
+    --text: #1f2733;
+    --muted: #545d69;
+    --muted-2: #626c78;
+    --faint: #9aa2ac;
+
+    /* Clay — the single warm accent */
+    --clay: #e0654c;
+    --clay-deep: #c64e36;
+    --clay-text: #a8452e;
+    --clay-tint: #fae9e4;
+    --clay-tint-border: #f2cfc6;
+    /* Selected-state fill, deeper than --clay-tint (see --teal-tint-strong). */
+    --clay-tint-strong: #f7d8cd;
+
+    /* Teal — good / in / ready */
+    --teal: #2f7d8a;
+    --teal-text: #2a6f7a;
+    --teal-tint: #eaf2f3;
+    --teal-tint-border: #cfe2e4;
+    /* Selected-state fill: the plain tint sits within a few RGB points of --surface-2,
+     so a chosen toggle next to grey .ctl chips needs this deeper wash. */
+    --teal-tint-strong: #d3e7e9;
+
+    /* Amber — warn / polishing */
+    --amber: #b8862f;
+    --amber-deep: #8a5a10;
+    --amber-tint: #f7ecd9;
+    --amber-tint-border: #e8d3a3;
+
+    /* Shape */
+    --radius-card: 14px;
+    --radius-ctl: 9px;
+    --radius-badge: 5px;
+    --radius-pill: 999px;
+    --shadow-card:
+        0 1px 3px rgba(15, 20, 26, 0.06),
+        0 22px 44px -30px rgba(15, 20, 26, 0.4);
+    --shadow-ctl: 0 1px 2px rgba(15, 20, 26, 0.18);
+
+    /* Legacy role names → new tokens (so the existing component CSS repaints from one place) */
+    --bg: var(--page);
+    --accent: var(--clay);
+    --good: var(--teal);
+    --warn: var(--amber);
+    --bad: var(--clay-deep);
+    --seam: var(--clay-deep);
+
+    /* Text-on-fill tokens. White fails AA on --clay (3.42), so a solid button that carries
+     a label uses --accent-btn (the -deep step) at rest, where white clears 4.5:1. Amber
+     stays light in both modes, so amber fills always take a dark ink (--on-amber). */
+    --on-accent: #ffffff; /* label on teal / clay-deep fills */
+    --on-amber: #1f2733; /* label on the always-light amber fill */
+    --accent-btn: var(--clay-deep); /* resting primary fill; white = 4.62 AA */
+    --accent-btn-hover: var(--clay-text); /* hover; white = 5.91 AA */
+}
+
+/* Gunmetal (dark) — the committed dark complement; coral brightens, ground goes cool-black. */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --page: #0e131a;
+        --surface: #131a23;
+        --surface-2: #28323f;
+        --border: #28323f;
+        --border-soft: #202a35;
+        --divider: #202a35;
+        --text: #e7ebf0;
+        --muted: #8b95a3;
+        --muted-2: #7c8a9a;
+        --faint: #4d5a68;
+
+        --clay: #f0836a;
+        --clay-deep: #e0654c;
+        --clay-text: #f0a894;
+        --clay-tint: #2a1d19;
+        --clay-tint-border: #462c24;
+        --clay-tint-strong: #40261d;
+
+        --teal: #4c98a5;
+        --teal-text: #83bcc5;
+        --teal-tint: #15242a;
+        --teal-tint-border: #294249;
+        --teal-tint-strong: #1d3540;
+
+        --amber: #cf9d4a;
+        --amber-deep: #e6bd7d;
+        --amber-tint: #271f14;
+        --amber-tint-border: #4a3a1e;
+
+        /* On the dark ground Clay brightens, so the button flips: a dark ink label on the
+       bright fill (6.80) instead of white, which would only reach 3.42. --on-amber holds:
+       amber stays light in both modes, so a dark ink still reads on it. */
+        --on-accent: #131a23;
+        --accent-btn: var(--clay); /* #f0836a; ink label = 6.80 AA */
+        --accent-btn-hover: var(--clay-deep); /* #e0654c; ink label = 5.11 AA */
+
+        --shadow-card:
+            0 1px 3px rgba(0, 0, 0, 0.3), 0 20px 40px -26px rgba(0, 0, 0, 0.6);
+        --shadow-ctl: 0 1px 2px rgba(0, 0, 0, 0.4);
+    }
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    /* Let native controls (the date picker glyph + popup, select arrows, scrollbars)
+     follow the active theme — otherwise they render light-styled on the dark ground. */
+    color-scheme: light dark;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    line-height: var(--leading-body);
+    -webkit-font-smoothing: antialiased;
+}
+
+a {
+    color: var(--accent);
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+
+.page {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+}
+/* Form pages: cap to the 720px form column (plus the page padding) so the form fills a centered
+   page instead of hugging the left of the 880px shell. The page-head narrows to match. */
+.form-page {
+    max-width: 760px;
+}
+/* A reading report (learning tracker): capped to a comfortable measure so short cards
+   do not stretch across the console with a hollow right. */
+.reading-page {
+    max-width: 720px;
+}
+/* The vocabulary editors (sections, tags, event types, padding profiles): a focused width so
+   each row's name+meta and its controls sit close, not at opposite edges of the console. */
+.vp-page {
+    max-width: 640px;
+}
+
+.page-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+.page-head h1 {
+    font-size: var(--text-h1);
+    line-height: var(--leading-tight);
+    margin: 0;
+}
+.page-head .sub {
+    color: var(--muted);
+    font-size: var(--text-body);
+}
+/* Detail pages whose content is the 720px form column: cap the head to match, so a
+   head action aligns with the card edge, not the page edge (same cap as .section-head). */
+.page-head.narrow {
+    max-width: 720px;
+}
+
+.back-link {
+    font-size: var(--text-body);
+    color: var(--muted);
+}
+
+/* Page-level guidance copy under the head. Muted like .note (the sanctioned
+   on-ground text block), sized between .sub and a form .hint. */
+.page-intro {
+    color: var(--muted);
+    font-size: var(--text-sm);
+    max-width: 640px;
+    margin: -6px 0 20px;
+}
+
+/* Timing bar ------------------------------------------------------------- */
+.timing {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 16px 18px;
+    margin-bottom: 20px;
+}
+.timing-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--text-body);
+    margin-bottom: 8px;
+}
+.timing-row .muted {
+    color: var(--muted);
+}
+.timing-track {
+    height: 10px;
+    background: var(--surface-2);
+    border-radius: 999px;
+    overflow: hidden;
+}
+.timing-fill {
+    height: 100%;
+    border-radius: 999px;
+}
+.timing-fill.under {
+    background: var(--warn);
+}
+.timing-fill.met {
+    background: var(--good);
+}
+.timing-fill.over {
+    background: var(--bad);
+}
+/* No target (the playground): nothing to budget against, and the total already sits in the
+   sub-header, so collapse the band to one quiet centered line rather than a near-empty card. */
+.timing-none {
+    text-align: center;
+    font-size: var(--text-sm);
+    color: var(--text);
+    margin: 0 0 20px;
+}
+.timing-none .muted {
+    color: var(--muted);
+}
+
+/* Shortfall + chase ------------------------------------------------------ */
+.callout {
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    font-size: var(--text-body);
+}
+.callout h2 {
+    font-size: var(--text-sm);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    margin: 0 0 8px;
+}
+.callout.shortfall {
+    background: var(--clay-tint);
+    border: 1px solid var(--clay-tint-border);
+}
+.callout.chase {
+    background: var(--teal-tint);
+    border: 1px solid var(--teal-tint-border);
+}
+
+/* Set list --------------------------------------------------------------- */
+.setlist {
+    display: flex;
+    flex-direction: column;
+}
+.song {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 14px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+.song .pos {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+    font-size: var(--text-caption);
+    min-width: 20px;
+    padding-top: 2px;
+}
+.song-main {
+    flex: 1;
+    min-width: 0;
+}
+.song-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+.song-headline {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-width: 0;
+}
+.song .title {
+    font-size: var(--text-title);
+    font-weight: 600;
+}
+.song .stage {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+    font-size: var(--text-caption);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+/* Metadata (left) and the row's action controls (right) share one line, so the
+   card is two lines tall and its right edge carries the actions instead of a void. */
+.song-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: 5px;
+}
+.song .meta {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    letter-spacing: var(--tracking-meta);
+    min-width: 0;
+}
+
+.badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+.badge {
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    letter-spacing: var(--tracking-meta);
+    padding: 2px 8px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    background: var(--surface-2);
+}
+.badge.ready {
+    color: var(--teal-text);
+    background: var(--teal-tint);
+    border-color: var(--teal-tint-border);
+}
+.badge.polish {
+    color: var(--amber-deep);
+    background: var(--amber-tint);
+    border-color: var(--amber);
+}
+.badge.low {
+    color: var(--muted);
+}
+.badge.learn {
+    color: var(--clay-text);
+    background: var(--clay-tint);
+    border-color: var(--clay-tint-border);
+}
+.badge.explicit {
+    color: var(--clay-text);
+    background: var(--clay-tint);
+    border-color: var(--clay-tint-border);
+}
+/* An urgent alert badge, e.g. a pinned song the confirmed cast can't cover. Bolder than
+   .explicit so "can't cast" reads as a problem to fix, not a passive tag. (Aesthetic TBD.) */
+.badge.warn {
+    color: var(--clay-deep);
+    background: var(--clay-tint);
+    border-color: var(--clay-deep);
+}
+
+/* Committed prep the draft could not place ------------------------------- */
+.unplaced-prep {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    border: 1px solid var(--clay-tint-border);
+    border-radius: var(--radius-ctl);
+    background: var(--clay-tint);
+}
+.unplaced-prep-head {
+    margin: 0;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--clay-deep);
+}
+.unplaced-prep-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.unplaced-prep-list li {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    flex-wrap: wrap;
+    font-size: var(--text-body);
+}
+.unplaced-prep-title {
+    font-weight: 600;
+    color: var(--text);
+}
+.unplaced-prep-reason {
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    color: var(--clay-deep);
+}
+.unplaced-prep-hint {
+    margin: 0;
+    font-size: var(--text-caption);
+    color: var(--muted);
+}
+
+/* Seams ------------------------------------------------------------------ */
+.seam {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0 4px 34px;
+    min-height: 22px;
+}
+.seam .rail {
+    width: 2px;
+    align-self: stretch;
+    background: var(--seam);
+    margin-left: 9px;
+    margin-right: 8px;
+    border-radius: 2px;
+}
+.seam-flags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 6px 0;
+}
+.flag {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: var(--radius-badge);
+    background: var(--clay-tint);
+    border: 1px solid var(--clay-tint-border);
+    color: var(--clay-text);
+}
+.seam.clean .rail {
+    background: var(--seam);
+}
+.seam-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.seam-gap {
+    font-size: var(--text-eyebrow);
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: inherit;
+    cursor: pointer;
+}
+.seam-gap:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+.seam-gap.segue {
+    color: var(--clay-text);
+    border-color: var(--clay-tint-border);
+    background: var(--clay-tint);
+}
+.segue-mark {
+    font-size: var(--text-caption);
+    color: var(--clay-text);
+    padding: 2px 0 6px 34px;
+}
+
+/* Breaks (intermissions) ------------------------------------------------- */
+.seam-add-break {
+    font-size: var(--text-eyebrow);
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: transparent;
+    border: 1px dashed var(--border);
+    color: var(--muted);
+    cursor: pointer;
+    font-family: inherit;
+}
+.seam-add-break:hover:not(:disabled) {
+    border-color: var(--accent);
+    color: var(--text);
+}
+.seam-add-break:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+.break-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 6px 0 6px 34px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: var(--surface-2);
+    border: 1px dashed var(--border);
+}
+.break-label {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: var(--tracking-meta);
+}
+.break-dur {
+    font-size: var(--text-caption);
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: inherit;
+    cursor: pointer;
+}
+/* Rides .ctl.danger for chroma; this only pins it to the row's far edge. */
+.break-remove {
+    margin-left: auto;
+}
+.break-mark {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text);
+    margin: 6px 0 6px 34px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: var(--surface-2);
+    border: 1px dashed var(--border);
+    display: inline-block;
+}
+.arc-break {
+    align-self: stretch;
+    width: 0;
+    margin: 0 6px;
+    border-left: 2px dashed var(--border);
+}
+.sheet-table .break-sheet-row td {
+    text-align: center;
+    font-weight: 600;
+    letter-spacing: var(--tracking-label);
+    padding: 10px 0;
+    color: var(--muted);
+}
+
+.section-label {
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--muted);
+    margin: 0 0 10px;
+}
+/* A section-label paired with a right-aligned action link (e.g. "Preview draft →").
+   Capped at the same 720px as the sub-panels it captions (.setlist-mgr, .rsvp,
+   .song-form) so the action aligns with the card edge, not the page edge; the top
+   margin separates the section from the block above (e.g. a form's Save row). */
+.section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    max-width: 720px;
+    margin-top: 28px;
+}
+.section-action {
+    font-size: var(--text-caption);
+    font-weight: 600;
+    color: var(--muted);
+}
+.section-action:hover {
+    color: var(--clay-deep);
+    text-decoration: none;
+}
+
+/* Events hub ------------------------------------------------------------- */
+.eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--muted);
+}
+.hub-hero {
+    display: grid;
+    grid-template-columns: 1fr 0.85fr 1.4fr;
+    align-items: center;
+    gap: 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 24px 28px;
+    margin-bottom: 16px;
+}
+.hub-hero-main {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.hub-hero-main .eyebrow {
+    color: var(--clay-text);
+}
+.hub-hero-title {
+    font-size: var(--text-display);
+    line-height: var(--leading-tight);
+    font-weight: 700;
+    letter-spacing: var(--tracking-tight);
+    margin: 2px 0 0;
+}
+.hub-hero-meta {
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    color: var(--muted);
+}
+.hub-hero-aside {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    border-left: 1px solid var(--divider);
+    padding-left: 28px;
+    padding-right: 28px;
+}
+/* Hero availability zone (middle) — next-event RSVP status, promoted from a standalone stat card. */
+.hub-hero-avail {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 7px;
+    border-left: 1px solid var(--divider);
+    padding-left: 32px;
+}
+.avail-break {
+    font-size: var(--text-caption);
+    color: var(--muted);
+}
+.hero-avail-action {
+    font-size: var(--text-caption);
+    font-weight: 600;
+    color: var(--muted);
+    margin-top: 2px;
+}
+.hero-avail-action:hover {
+    color: var(--clay-deep);
+    text-decoration: none;
+}
+.hub-metric {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1;
+}
+.metric-num {
+    font-family: var(--font-mono);
+    font-size: var(--text-metric);
+    font-weight: 600;
+}
+/* In the hero the two figures (availability, fill) are supporting stats, not headlines. Drop
+   them to the stat-card number size so the eye reads name -> stats -> Continue draft, instead of
+   bouncing between the event title and two 30px numbers of equal weight. */
+.hub-hero .metric-num {
+    font-size: var(--text-h1);
+}
+.metric-den {
+    color: var(--muted);
+}
+.metric-unit {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--muted-2);
+    margin-top: 5px;
+}
+.hub-stats {
+    display: grid;
+    /* Sixths across the row: Repertoire 2, Coverage 1, Recency 3 (split into two). */
+    grid-template-columns: 2fr 1fr 3fr;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+/* Recency's 3/6 cell, halved into two nested cards: not-performed and not-rehearsed. */
+.recency-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+.recency-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-ctl);
+    padding: 10px 12px;
+}
+.stat-card {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-ctl);
+    padding: 14px 16px;
+    color: var(--text);
+}
+.stat-card:hover {
+    text-decoration: none;
+    border-color: var(--clay-tint-border);
+}
+.stat-sub {
+    font-size: var(--text-caption);
+    color: var(--muted);
+}
+.hub-table-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 18px 20px 8px;
+}
+.hub-table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.hub-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-sm);
+}
+.hub-table thead th {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--muted-2);
+    text-align: left;
+    font-weight: 600;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+}
+.hub-table tbody td {
+    padding: 11px 10px;
+    border-bottom: 1px solid var(--border-soft);
+    vertical-align: middle;
+}
+.hub-table tbody tr:last-child td {
+    border-bottom: none;
+}
+.cell-title a {
+    color: var(--text);
+    font-weight: 600;
+}
+.cell-title a:hover {
+    color: var(--clay-text);
+    text-decoration: none;
+}
+.cell-mono {
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    color: var(--muted);
+}
+/* Right-aligned cell (e.g. a trailing status column). */
+.hub-table .cell-right {
+    text-align: right;
+}
+.epill {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    font-weight: 600;
+    letter-spacing: var(--tracking-meta);
+    padding: 3px 9px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    background: var(--surface-2);
+}
+.epill.on {
+    color: var(--clay-deep);
+    background: var(--clay-tint);
+    border-color: var(--clay-tint-border);
+}
+.epill.good {
+    color: var(--teal-text);
+    background: var(--teal-tint);
+    border-color: var(--teal-tint-border);
+}
+.epill.warn {
+    color: var(--amber-deep);
+    background: var(--amber-tint);
+    border-color: var(--amber-tint-border);
+}
+.epill.neutral {
+    color: var(--muted);
+    background: var(--surface-2);
+    border-color: var(--border);
+}
+
+/* Richer hub layout ------------------------------------------------------- */
+.page.hub {
+    max-width: 1080px;
+}
+/* The fill verdict chip inside the hero (thin / on-target / over). */
+.hero-callout {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 12px;
+    border-radius: var(--radius-ctl);
+    background: var(--clay-tint);
+    border: 1px solid var(--clay-tint-border);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--clay-text);
+}
+.hero-callout.ok {
+    background: var(--teal-tint);
+    border-color: var(--teal-tint-border);
+    color: var(--teal-text);
+}
+.hero-callout.over {
+    background: var(--amber-tint);
+    border-color: var(--amber-tint-border);
+    color: var(--amber-deep);
+}
+.hero-callout .delta {
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: var(--radius-badge);
+    background: var(--surface);
+    border: 1px solid var(--clay-tint-border);
+    color: var(--clay-deep);
+    white-space: nowrap;
+}
+.hero-callout.ok .delta {
+    border-color: var(--teal-tint-border);
+    color: var(--teal-text);
+}
+.hero-callout.over .delta {
+    border-color: var(--amber-tint-border);
+    color: var(--amber-deep);
+}
+/* The little ascending bar-chart glyph beside the minutes metric. */
+.hero-chartmetric {
+    display: flex;
+    align-items: flex-end;
+    gap: 14px;
+}
+/* The action cluster at the foot of the hero status block. */
+.hero-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+/* Stat cards: sans "word-value" (24 songs / 3 fragile), action links, readiness bar. */
+.stat-val {
+    font-size: var(--text-subhead);
+    line-height: var(--leading-tight);
+    font-weight: 700;
+    margin-top: 2px;
+}
+.stat-action {
+    font-size: var(--text-caption);
+    font-weight: 600;
+    color: var(--muted);
+    margin-top: auto;
+    padding-top: 6px;
+}
+a.stat-action:hover {
+    text-decoration: none;
+    color: var(--clay-deep);
+}
+.readiness-bar {
+    display: flex;
+    height: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+    gap: 1.5px;
+    margin-top: 8px;
+}
+.readiness-seg {
+    min-width: 3px;
+}
+.readiness-seg.ready {
+    background: var(--teal);
+}
+.readiness-seg.polishing {
+    background: var(--amber);
+}
+.readiness-seg.learning {
+    background: var(--clay);
+}
+.readiness-seg.dormant {
+    background: var(--faint);
+}
+.readiness-legend {
+    font-size: var(--text-eyebrow);
+    color: var(--muted);
+    margin-top: 7px;
+}
+/* Legend labels carry their bar-segment colour, so the words read as the key. */
+.readiness-legend span {
+    font-weight: 600;
+}
+.leg-ready {
+    color: var(--teal);
+}
+.leg-polishing {
+    color: var(--amber);
+}
+.leg-learning {
+    color: var(--clay);
+}
+.leg-dormant {
+    color: var(--faint);
+}
+/* The recency card's positive empty state (nothing stale / cold). */
+.stat-sub.good {
+    color: var(--teal);
+}
+/* Table: two-line event cell, title heading, muted/zero RSVP, cancelled row. */
+.cell-sub {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    color: var(--muted);
+    margin-top: 2px;
+}
+.cell-mono.zero {
+    color: var(--muted);
+}
+.hub-table tbody tr.cancelled {
+    opacity: 0.55;
+}
+.hub-table tbody tr.cancelled .cell-title a {
+    text-decoration: line-through;
+}
+
+/* Dashboard lower panels — Set-in-progress + Needs-you --------------------- */
+.dash-panels {
+    display: grid;
+    grid-template-columns: 1.85fr 1fr;
+    /* Size each panel to its own content so the short "Needs you" panel does not stretch to
+     match the growing set list and trail an empty tail. */
+    align-items: start;
+    gap: 16px;
+    margin-top: 16px;
+}
+.panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 18px 20px;
+}
+.panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+.panel-title {
+    font-size: var(--text-title);
+    font-weight: 700;
+    margin: 0;
+}
+.minutes-pill {
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    font-weight: 600;
+    color: var(--amber-deep);
+    background: var(--amber-tint);
+    border: 1px solid var(--amber-tint-border);
+    border-radius: var(--radius-pill);
+    padding: 3px 10px;
+}
+.set-rows {
+    display: flex;
+    flex-direction: column;
+}
+.set-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 6px;
+    border-radius: 7px;
+}
+.set-row:hover {
+    background: var(--surface-2);
+}
+.set-idx {
+    width: 14px;
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    color: var(--muted);
+    text-align: right;
+}
+.set-title {
+    flex: 1;
+    font-weight: 600;
+    font-size: var(--text-body);
+}
+.set-key {
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    font-weight: 600;
+    color: var(--clay-text);
+}
+.set-tempo {
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    color: var(--muted);
+    width: 78px;
+    text-align: right;
+    white-space: nowrap;
+}
+.dots {
+    display: inline-flex;
+    gap: 2.5px;
+    width: 44px;
+    justify-content: flex-end;
+}
+.dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    border: 1px solid var(--clay-tint-border);
+}
+.dot.on {
+    background: var(--clay);
+    border-color: var(--clay);
+}
+.set-seam {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 3px 6px;
+}
+.set-seam-rule {
+    flex: 1;
+    height: 1px;
+    background: repeating-linear-gradient(
+        90deg,
+        var(--clay-tint-border) 0 6px,
+        transparent 6px 11px
+    );
+}
+.set-seam-flags {
+    font-size: var(--text-eyebrow);
+    font-weight: 600;
+    color: var(--clay-text);
+    white-space: nowrap;
+}
+/* A set-wide seam summary (e.g. one dominant flag), shown once above the rows instead of on
+   every transition. */
+.set-seam-summary {
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    color: var(--clay-text);
+    margin: 0 4px 6px 6px;
+}
+.panel-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-soft);
+}
+.foot-verdict {
+    font-size: var(--text-caption);
+    font-weight: 600;
+}
+.foot-verdict.under,
+.foot-verdict.over {
+    color: var(--amber-deep);
+}
+.foot-verdict.ok {
+    color: var(--teal-text);
+}
+.panel-action {
+    font-size: var(--text-caption);
+    font-weight: 600;
+    color: var(--muted);
+}
+.panel-action:hover {
+    color: var(--clay-deep);
+    text-decoration: none;
+}
+.needs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.need-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 2px 0 2px 11px;
+    border-left: 2px solid var(--border);
+}
+.need-row.clay {
+    border-left-color: var(--clay);
+}
+.need-row.amber {
+    border-left-color: var(--amber);
+}
+.need-row.teal {
+    border-left-color: var(--teal);
+}
+.need-text {
+    flex: 1;
+}
+.need-line1 {
+    font-size: var(--text-sm);
+    font-weight: 600;
+}
+.need-line2 {
+    font-size: var(--text-caption);
+    color: var(--muted);
+}
+.need-action {
+    font-size: var(--text-caption);
+    font-weight: 600;
+    color: var(--muted);
+    white-space: nowrap;
+}
+.need-action:hover {
+    color: var(--clay-deep);
+    text-decoration: none;
+}
+.panel-empty {
+    font-size: var(--text-sm);
+    color: var(--muted);
+    margin: 4px 0;
+}
+@media (max-width: 720px) {
+    .hub-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    /* Recency spans the full row on mobile, so its two cards stay side by side instead of
+     stacking in a half-width cell that leaves the other half of the row empty. */
+    .hub-stats > .stat-card:has(.recency-split) {
+        grid-column: 1 / -1;
+    }
+    .dash-panels {
+        grid-template-columns: 1fr;
+    }
+    /* Let the seam flags wrap on narrow phones instead of forcing the panel wide. */
+    .set-seam {
+        flex-wrap: wrap;
+        row-gap: 2px;
+    }
+    .set-seam-flags {
+        white-space: normal;
+    }
+    /* Keep the 6-column table from crushing; it scrolls inside its card instead. */
+    .hub-table {
+        min-width: 600px;
+    }
+    /* The songs table carries a 7th (actions) column, so it needs more room. */
+    .hub-table.songs-table {
+        min-width: 760px;
+    }
+    .hub-hero {
+        grid-template-columns: 1fr;
+    }
+    .hub-hero-avail,
+    .hub-hero-aside {
+        align-items: flex-start;
+        min-width: 0;
+        border-left: none;
+        padding-left: 0;
+        border-top: 1px solid var(--divider);
+        padding-top: 16px;
+    }
+}
+
+.note {
+    color: var(--muted);
+    font-size: var(--text-sm);
+    margin-top: 28px;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+}
+
+/* Nav -------------------------------------------------------------------- */
+.nav {
+    /* Sticky so the menu bar stays put while the page scrolls. Sticky still establishes the
+     positioning anchor for the phone-width dropdown menu (see the max-width: 640px block). */
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+}
+/* Mobile menu trigger — hidden until the phone breakpoint reveals it. */
+.nav-toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-ctl);
+    color: var(--text);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.nav-toggle:hover {
+    background: var(--surface-2);
+}
+.nav-toggle:focus-visible {
+    outline: 2px solid var(--clay);
+    outline-offset: 2px;
+}
+.nav-inner {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+/* Right cluster: role pill + avatar, pushed to the far edge. */
+.nav-right {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+}
+.nav-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-ctl);
+    background: var(--text);
+    color: var(--surface);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--text-eyebrow);
+    font-weight: 700;
+    letter-spacing: var(--tracking-meta);
+    flex-shrink: 0;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-family: var(--font-sans);
+}
+.nav-avatar:hover {
+    background: var(--clay-deep);
+}
+.nav-avatar:focus-visible {
+    outline: 2px solid var(--clay);
+    outline-offset: 2px;
+}
+
+/* The account dropdown behind the avatar. */
+.account {
+    position: relative;
+}
+.account-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 236px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 6px;
+    z-index: 50;
+}
+.account-head {
+    padding: 8px 10px 10px;
+    border-bottom: 1px solid var(--border-soft);
+    margin-bottom: 6px;
+}
+.account-name {
+    font-size: var(--text-body);
+    font-weight: 600;
+    color: var(--text);
+}
+.account-sub {
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    color: var(--muted);
+    margin-top: 2px;
+    word-break: break-word;
+}
+.account-section {
+    padding: 4px 0;
+}
+.account-section + .account-section {
+    border-top: 1px solid var(--border-soft);
+}
+.account-label {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--muted-2);
+    padding: 4px 10px;
+}
+/* Items render as either <button> (switch, sign out) or <a> (profile, manage) — reset both. */
+.account-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: left;
+    padding: 8px 10px;
+    border: none;
+    background: none;
+    border-radius: var(--radius-ctl);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    color: var(--text);
+    cursor: pointer;
+}
+.account-item:hover {
+    background: var(--surface-2);
+    text-decoration: none;
+}
+.account-item.active {
+    color: var(--clay-text);
+    font-weight: 600;
+}
+.account-item.muted {
+    color: var(--muted);
+    font-size: var(--text-caption);
+}
+.account-item.danger {
+    color: var(--clay-deep);
+}
+.account-item.danger:hover {
+    background: var(--clay-tint);
+}
+.account-star {
+    color: var(--amber);
+    font-size: var(--text-eyebrow);
+}
+
+/* Roster — section cards of singer rows ------------------------------------ */
+/* The ensemble roster is a 2-column card grid at the console width, so the section cards fill the
+   page instead of leaving each member row with a wide empty middle (roster-main is flex:1, which
+   otherwise strands the name far from the range + actions). Collapses to one column below ~900px. */
+.roster-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    align-items: start;
+}
+.roster-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 6px;
+}
+.roster-card-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 8px 12px 4px;
+}
+.roster-card-head .section-label {
+    margin: 0;
+}
+.roster-count {
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    color: var(--muted);
+}
+.roster-rows {
+    display: flex;
+    flex-direction: column;
+}
+.roster-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 12px;
+    border-radius: var(--radius-ctl);
+}
+.roster-row + .roster-row {
+    border-top: 1px solid var(--border-soft);
+}
+.roster-row:hover {
+    background: var(--surface-2);
+}
+.roster-row.inactive {
+    opacity: 0.55;
+}
+.roster-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius-ctl);
+    background: var(--text);
+    color: var(--surface);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--text-caption);
+    font-weight: 700;
+    flex-shrink: 0;
+}
+.roster-main {
+    flex: 1;
+    min-width: 0;
+}
+.roster-name {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 8px;
+    font-weight: 600;
+    font-size: var(--text-body);
+}
+/* The name is the link to the singer's edit page (there is no separate Edit button).
+   Inherits the name weight/size; only color and hover are set. */
+.roster-name a {
+    color: var(--text);
+    text-decoration: none;
+}
+.roster-name a:hover {
+    color: var(--clay-text);
+}
+/* Availability dot — used on the per-event roster (in / out / maybe / no response). */
+.roster-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.roster-dot.in {
+    background: var(--teal);
+}
+.roster-dot.out {
+    background: var(--clay-deep);
+}
+.roster-dot.tentative {
+    background: var(--amber);
+}
+.roster-dot.none {
+    background: transparent;
+    border: 1.5px solid var(--faint);
+}
+/* Right-aligned availability label on the event roster (dot lives inside). */
+.roster-avail {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: var(--text-caption);
+    font-weight: 600;
+    white-space: nowrap;
+    color: var(--muted);
+}
+.roster-avail.in {
+    color: var(--teal-text);
+}
+.roster-avail.out {
+    color: var(--clay-text);
+}
+.roster-avail.tentative {
+    color: var(--amber-deep);
+}
+/* "No response" is a real state, not an absence — keep it legible (faint fails AA, and
+   the drafter treats silence as distinct from "out"). Muted is the readable floor. */
+.roster-avail.none {
+    color: var(--muted);
+    font-weight: 400;
+}
+.roster-sections {
+    font-size: var(--text-caption);
+    color: var(--muted);
+    margin-top: 2px;
+}
+.roster-home {
+    color: var(--clay-text);
+    font-weight: 600;
+}
+.roster-nosection {
+    color: var(--muted);
+}
+.roster-range {
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    color: var(--muted);
+    white-space: nowrap;
+}
+.roster-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+/* One column once the two cards would get too narrow for a comfortable member row. */
+@media (max-width: 900px) {
+    .roster-grid {
+        grid-template-columns: 1fr;
+    }
+}
+@media (max-width: 640px) {
+    /* An ensemble-roster row carries name + pills + range AND two action buttons — too much
+     for one phone line (the pills were colliding with Edit/Deactivate). Lay it out as a
+     grid: the identity block gets the full first line, range + actions drop below. Scoped
+     via :has() to the rows that have actions, so the leaner event-roster rows stay flex. */
+    .roster-row:has(.roster-actions) {
+        display: grid;
+        grid-template-columns: 34px minmax(0, 1fr) auto;
+        grid-template-areas:
+            "avatar main   main"
+            "avatar range  actions";
+        column-gap: 12px;
+        row-gap: 6px;
+        align-items: center;
+    }
+    .roster-row:has(.roster-actions) .roster-avatar {
+        grid-area: avatar;
+        align-self: start;
+    }
+    .roster-row:has(.roster-actions) .roster-main {
+        grid-area: main;
+    }
+    .roster-row:has(.roster-actions) .roster-range {
+        grid-area: range;
+        align-self: center;
+    }
+    .roster-row:has(.roster-actions) .roster-actions {
+        grid-area: actions;
+        justify-content: flex-end;
+    }
+}
+/* Below ~880px the full director nav (7 links + role pill + avatar) no longer fits the
+   1080px inner width, so pin the brand + avatar, let the links scroll horizontally, and
+   drop the role pill to reclaim width — otherwise the whole page gets a horizontal
+   scrollbar in the 721–860px band (e.g. iPad portrait). */
+@media (max-width: 880px) {
+    .nav-inner {
+        gap: 14px;
+    }
+    .nav .brand {
+        flex-shrink: 0;
+    }
+    .nav-mid {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        /* /me stops centering here (nav-me becomes flex:0 0 auto below), so the gap that separated
+       it from the last section is gone. Restore it explicitly, matching the inter-link gap. */
+        gap: 20px;
+    }
+    .nav-mid::-webkit-scrollbar {
+        display: none;
+    }
+    .nav .nav-links {
+        gap: 20px;
+    }
+    .nav .nav-links a,
+    .nav .nav-me a {
+        white-space: nowrap;
+    }
+    .nav-right {
+        margin-left: 0;
+    }
+    /* Below the fold the personal link stops growing and rides in the scroll with the main
+     sections, so only Settings + the avatar stay pinned. */
+    .nav-me {
+        flex: 0 0 auto;
+    }
+}
+.nav .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    font-weight: 700;
+    font-size: var(--text-subhead);
+    letter-spacing: var(--tracking-tight);
+    color: var(--text);
+    padding: 19px 0;
+}
+.nav .brand:hover {
+    text-decoration: none;
+}
+.brand-logo {
+    display: inline-flex;
+    align-items: center;
+}
+.nav .nav-links {
+    display: flex;
+    gap: 24px;
+    font-size: var(--text-body);
+}
+/* Main sections + the director's personal link scroll together as one region; /me grows to
+   center itself in the gap on desktop. Settings joins the right cluster. All share the
+   section-link look. */
+.nav-mid {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+}
+.nav-me {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+.nav .nav-links a,
+.nav .nav-me a,
+.nav .nav-right .nav-section {
+    color: var(--muted);
+    font-weight: 600;
+    font-size: var(--text-body);
+    padding: 21px 0;
+    border-bottom: 2px solid transparent;
+}
+.nav .nav-links a:hover,
+.nav .nav-me a:hover,
+.nav .nav-right .nav-section:hover {
+    color: var(--text);
+    text-decoration: none;
+}
+.nav .nav-links a.active,
+.nav .nav-me a.active,
+.nav .nav-right .nav-section.active {
+    color: var(--text);
+    font-weight: 700;
+    border-bottom-color: var(--clay);
+}
+
+/* Phones: the section links do not fit, and the scroll strip hides them with no affordance.
+   Collapse them into a menu behind a hamburger. Members (whose entire console is these links,
+   two with no home-card fallback) get every destination back; the account menu and, for a
+   director, Settings stay on the bar. This block sits after the base nav rules on purpose, so
+   its overrides win the source-order tiebreak at the phone width. */
+@media (max-width: 640px) {
+    .nav-toggle {
+        display: inline-flex;
+        margin-left: auto;
+    }
+    .nav-mid {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        z-index: 40;
+        display: none;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+        overflow: visible;
+        padding: 6px;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        box-shadow: var(--shadow-card);
+    }
+    .nav-mid.open {
+        display: flex;
+    }
+    .nav .nav-links {
+        flex-direction: column;
+        gap: 0;
+    }
+    .nav-me {
+        flex: 0 0 auto;
+        display: block;
+    }
+    .nav .nav-links a,
+    .nav .nav-me a {
+        display: block;
+        padding: 11px 12px;
+        border-bottom: none;
+        border-radius: var(--radius-ctl);
+    }
+    .nav .nav-links a.active,
+    .nav .nav-me a.active {
+        color: var(--clay-text);
+        background: var(--surface-2);
+        border-bottom-color: transparent;
+    }
+}
+
+/* Anchors styled as control buttons (Cancel, Manage songs, Edit). */
+a.ctl {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+}
+a.ctl:hover {
+    text-decoration: none;
+}
+
+/* Forms ------------------------------------------------------------------ */
+.song-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    max-width: 720px;
+}
+/* Group the form into surface cards with a mono section eyebrow, matching the
+   redesigned screens' chroma (see .hub-table-card / .roster-card). */
+.form-card {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 20px 22px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+}
+.form-card > .section-label {
+    margin: 0;
+}
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: var(--text-body);
+}
+.field > span {
+    color: var(--muted);
+    font-size: var(--text-sm);
+}
+.field input[type="text"],
+.field input[type="number"],
+.field input[type="email"],
+.field input[type="date"],
+.field input[type="password"],
+.field input:not([type]),
+.field select {
+    /* Fixed box height so selects and the date picker line up with the text inputs
+     (native selects/date controls otherwise render at their own intrinsic heights).
+     Vertical centering is the control's default, so padding is horizontal-only. */
+    box-sizing: border-box;
+    height: 36px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0 10px;
+    color: var(--text);
+    font-size: var(--text-body);
+    /* A slight inset so an empty field reads as a control, not a faint box on the card. */
+    box-shadow: inset 0 1px 2px rgb(15 20 26 / 0.05);
+}
+.field input:focus,
+.field select:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+/* A visible keyboard-focus ring: the border-color change alone is below WCAG 2.4.7. */
+.field input:focus-visible,
+.field select:focus-visible {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.field-row {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+.field-row .field {
+    flex: 1;
+    min-width: 140px;
+}
+.field.checkbox {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    align-self: flex-end;
+    padding-bottom: 9px;
+}
+.field.checkbox > span {
+    color: var(--text);
+    font-size: var(--text-body);
+}
+/* In a mixed control row, a checkbox or a small numeric field should size to its
+   content and pack left. An equal flex cell (flex: 1) leaves trailing space that
+   reads as an accidental gap before the next control — the chasm on the event
+   policies row and the singer identity row. Content-size them instead so the row
+   groups cleanly. */
+.field-row .field.checkbox {
+    flex: 0 0 auto;
+    min-width: 0;
+}
+.field-row .field.compact {
+    flex: 0 0 auto;
+    width: 180px;
+    min-width: 0;
+}
+
+/* Policies & padding: two columns so the card fills its width — the on/off policy toggles on
+   the left, the numeric padding on the right — instead of clustering every control on the left.
+   The padding fields fill their column, so they sit at the same width as the Event card's rows. */
+.policy-split {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 28px;
+    align-items: start;
+}
+.policy-checks {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+/* Stacked here, so align the boxes to the top-left, not the bottom-right that the row layout
+   uses to line a checkbox up with a sibling field's input. */
+.policy-checks .field.checkbox {
+    align-self: flex-start;
+    padding-bottom: 0;
+}
+@media (max-width: 620px) {
+    .policy-split {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}
+
+/* The self-confidence select on /me/parts. Match the form selects so it is not a
+   raw native control sitting in an otherwise styled surface. */
+.cover-conf select {
+    box-sizing: border-box;
+    height: 36px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0 10px;
+    color: var(--text);
+    font-size: var(--text-body);
+}
+.cover-conf select:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.tag-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.tag-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--text-sm);
+    padding: 5px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--muted);
+    cursor: pointer;
+}
+.tag-chip.on {
+    color: var(--clay-text);
+    border-color: var(--clay-tint-border);
+    background: var(--clay-tint);
+}
+.tag-chip input {
+    display: none;
+}
+.tag-chip .cat {
+    font-size: var(--text-eyebrow);
+    opacity: 0.6;
+}
+
+.parts-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+/* Each SongForm part is an outlined sub-panel with unified 36px controls. Two deliberate
+   lines — identity, then constraints — so eight controls read as a tidy stack instead of an
+   arbitrary flex-wrap that strands the range fields and Remove on a half-empty second line. */
+.part-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+}
+.part-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+/* The reorder + remove buttons cluster at the right of the constraints line, so they read
+   as the row's actions and both lines run the full width. */
+.part-line .part-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+/* Compact, square-ish arrow buttons so the up/down pair aligns tidily. */
+.part-move {
+    min-width: 34px;
+}
+/* SongForm parts editor only (not the shared settings-manager .part-range inputs): a little
+   more width on the range fields, and a bit more air between low and high than the row gap. */
+.part-line .part-range {
+    width: 100px;
+}
+.part-line .part-range + .part-range {
+    margin-left: 8px;
+}
+.part-row .part-label {
+    flex: 1;
+    min-width: 150px;
+    box-sizing: border-box;
+    height: 36px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0 10px;
+    color: var(--text);
+    font-size: var(--text-sm);
+}
+/* Height only, and SCOPED to .part-row — the settings managers (SectionsManager,
+   EventTypesManager, TagsManager, PaddingProfilesManager) reuse these bare .part-*
+   classes and must keep their own intrinsic sizing/fill. */
+.part-row .part-section,
+.part-row .part-count input,
+.part-row .part-range {
+    box-sizing: border-box;
+    height: 36px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+/* Keep "Add part" a compact button, not a full-width bar (the parts-editor is a
+   stretch flex column, which the part panels want but the button does not). */
+.parts-editor > .ctl {
+    align-self: flex-start;
+}
+
+/* Shared .part-* control chroma — also used by the settings managers, keep intact. */
+.part-req,
+.part-count {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--text-sm);
+    color: var(--muted);
+}
+.part-count input {
+    width: 56px;
+    box-sizing: border-box;
+    height: 36px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0 8px;
+    color: var(--text);
+}
+.part-section {
+    box-sizing: border-box;
+    height: 36px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0 8px;
+    color: var(--text);
+    font-size: var(--text-sm);
+}
+.part-section:disabled {
+    opacity: 0.5;
+}
+.part-range {
+    width: 84px;
+    box-sizing: border-box;
+    height: 36px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0 8px;
+    color: var(--text);
+    font-size: var(--text-sm);
+}
+/* Settings-manager control chroma: the .part-label text inputs (shared by setlist/
+   playground too, so scope to the manager rows) get the 36px field treatment, and the
+   metric line reads in mono like the redesigned screens. */
+.vp-row .part-label,
+.vp-edit .part-label,
+.vp-new .part-label,
+.et-edit .part-label,
+.et-edit-line .part-label,
+.pg-new .part-label {
+    box-sizing: border-box;
+    height: 36px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0 10px;
+    color: var(--text);
+    font-size: var(--text-sm);
+}
+.vp-row .rep-meta,
+.et-edit .rep-meta {
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    letter-spacing: var(--tracking-meta);
+}
+
+.form-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.hint {
+    color: var(--muted);
+    font-size: var(--text-sm);
+    margin: 4px 0 0;
+}
+
+/* Repertoire list -------------------------------------------------------- */
+.rep-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+/* Playground only: lay saved programs as a card grid so they fill the console width. auto-fill
+   keeps a lone program a sensible size and drops to one column on narrow screens. Scoped to
+   .rep-grid so the other .rep-list surfaces (what-if, history, schedule, ...) stay single-column. */
+.rep-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
+    gap: 12px;
+    align-items: start;
+}
+.rep-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 14px 18px;
+}
+.rep-row .rep-meta {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    letter-spacing: var(--tracking-meta);
+    margin-top: 3px;
+}
+.rep-row.archived {
+    opacity: 0.55;
+}
+.rep-row .rep-title {
+    font-size: var(--text-title);
+    font-weight: 600;
+}
+/* Playground index: the program title is itself the link to its builder (there is no
+   separate Open button). Only that .rep-title is an <a>, so this never touches the
+   plain-text titles on the schedule/history/insight surfaces. */
+a.rep-title {
+    color: var(--text);
+    text-decoration: none;
+}
+a.rep-title:hover {
+    color: var(--clay-text);
+}
+.role-tag {
+    margin-left: 8px;
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    font-weight: 600;
+    letter-spacing: var(--tracking-meta);
+    color: var(--clay-text);
+    background: var(--clay-tint);
+    border: 1px solid var(--clay-tint-border);
+    border-radius: var(--radius-pill);
+    padding: 2px 8px;
+    vertical-align: middle;
+}
+.role-tag.nonsinging {
+    color: var(--muted);
+    background: var(--surface-2);
+    border-color: var(--border);
+}
+.role-tag.pending {
+    color: var(--amber-deep);
+    background: var(--amber-tint);
+    border-color: var(--amber-tint-border);
+}
+
+/* Member-invite control on the roster detail page. */
+.invite-box {
+    margin-top: 24px;
+    padding: 20px 22px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    background: var(--surface);
+}
+.invite-box .muted {
+    color: var(--muted);
+    font-size: var(--text-sm);
+    margin: 0 0 12px;
+}
+.invite-form {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.invite-form input {
+    flex: 1 1 220px;
+    min-width: 0;
+    box-sizing: border-box;
+    height: 36px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0 10px;
+    color: var(--text);
+    font-size: var(--text-body);
+}
+.status.error {
+    background: var(--clay-tint);
+    border-color: var(--clay-tint-border);
+}
+
+/* Member RSVP buttons on /me/schedule. */
+.rsvp-controls {
+    display: inline-flex;
+    gap: 6px;
+}
+.rsvp-btn {
+    display: inline-flex;
+    align-items: center;
+    box-sizing: border-box;
+    height: 34px;
+    padding: 0 14px;
+    font-size: var(--text-sm);
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--muted);
+    cursor: pointer;
+}
+.rsvp-btn:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+.rsvp-btn.on.rsvp-in {
+    color: var(--on-accent);
+    background: var(--good);
+    border-color: var(--good);
+}
+.rsvp-btn.on.rsvp-tentative {
+    color: var(--on-amber);
+    background: var(--warn);
+    border-color: var(--warn);
+}
+.rsvp-btn.on.rsvp-out {
+    color: var(--on-accent);
+    background: var(--bad);
+    border-color: var(--bad);
+}
+/* A non-focus-stealing busy cue (we never disable the focused control) + per-row error. */
+.rep-row[aria-busy="true"] {
+    opacity: 0.75;
+}
+.row-error {
+    color: var(--warn);
+}
+
+/* Member schedule: each event carries its context (venue, type, target, on-book/
+   explicit) and an expandable "who's coming" by section. Cancelled events are struck, not hidden. */
+.sched-item {
+    display: flex;
+    flex-direction: column;
+}
+.sched-item .rep-row {
+    align-items: flex-start;
+}
+.sched-item.cancelled .rep-row {
+    opacity: 0.6;
+}
+.sched-item.cancelled .sched-name {
+    text-decoration: line-through;
+}
+/* The event name is a link into its call sheet; keep it looking like the heading. */
+.sched-name-link {
+    color: inherit;
+    text-decoration: none;
+}
+.sched-name-link:hover {
+    text-decoration: underline;
+}
+.sched-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+.whoscoming-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    align-self: flex-start;
+    margin: 6px 0 2px 6px;
+    padding: 4px 2px;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: var(--text-sm);
+}
+.whoscoming-toggle:hover {
+    color: var(--text);
+}
+.whoscoming-toggle:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+.whoscoming-count {
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    letter-spacing: var(--tracking-meta);
+    color: var(--teal-text);
+}
+.whoscoming {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 4px 0 2px 22px;
+    padding: 12px 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-ctl);
+}
+.wc-group {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: 6px 12px;
+    align-items: baseline;
+}
+.wc-section {
+    font-size: var(--text-micro);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--faint);
+}
+.wc-names {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-size: var(--text-sm);
+    min-width: 0;
+}
+.wc-bucket-label {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    letter-spacing: var(--tracking-meta);
+    text-transform: uppercase;
+}
+.wc-in .wc-bucket-label {
+    color: var(--teal-text);
+}
+.wc-tentative .wc-bucket-label {
+    color: var(--amber-deep);
+}
+.wc-out .wc-bucket-label {
+    color: var(--clay-text);
+}
+.wc-pending .wc-bucket-label {
+    color: var(--faint);
+}
+@media (max-width: 620px) {
+    .wc-group {
+        grid-template-columns: 1fr;
+        gap: 2px;
+    }
+}
+
+/* The "next up" banner at the top of the member home: the soonest event + the member's answer. */
+.nextup {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--good);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 14px 18px;
+    margin-bottom: 18px;
+}
+.nextup.unanswered {
+    border-left-color: var(--warn);
+}
+.nextup:hover {
+    border-color: var(--clay-tint-border);
+}
+.nextup-eyebrow {
+    display: block;
+    font-size: var(--text-micro);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--faint);
+}
+.nextup-title {
+    display: block;
+    font-size: var(--text-title);
+    font-weight: 600;
+    margin-top: 2px;
+}
+.nextup-meta {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    letter-spacing: var(--tracking-meta);
+    color: var(--muted);
+    margin-top: 3px;
+}
+.nextup-rsvp {
+    display: block;
+    font-size: var(--text-sm);
+    color: var(--teal-text);
+    margin-top: 6px;
+}
+.nextup-rsvp.warn {
+    color: var(--amber-deep);
+}
+
+/* Member call sheet: the read-only gig view. Reuses the sheet table, who's-coming, and
+   rsvp button styles; these add the call-sheet frame, the member's own-part marks, and the prep list. */
+.callsheet .page-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+}
+.callsheet-when {
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    letter-spacing: var(--tracking-meta);
+    color: var(--teal-text);
+    white-space: nowrap;
+}
+.callsheet-rsvp {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    max-width: 720px;
+    margin: 4px 0 8px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--good);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+}
+.callsheet-rsvp[aria-busy="true"] {
+    opacity: 0.75;
+}
+.callsheet-rsvp-label {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text);
+}
+.callsheet-section {
+    max-width: 720px;
+}
+/* A shared LIVE draft: a calm heads-up that the set is not final, above the running order. */
+.callsheet-draft-banner {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    max-width: 720px;
+    margin: 0 0 14px;
+    padding: 11px 14px;
+    border: 1px solid var(--teal-tint-border);
+    border-radius: var(--radius-ctl);
+    background: var(--teal-tint);
+    color: var(--teal-text);
+    font-size: var(--text-body);
+    line-height: 1.4;
+}
+.callsheet-draft-tag {
+    flex: none;
+    padding: 2px 9px;
+    border-radius: var(--radius-pill);
+    background: var(--teal);
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    font-weight: 700;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+}
+.callsheet-setmeta {
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    letter-spacing: var(--tracking-meta);
+    color: var(--muted);
+    text-align: right;
+}
+/* The songs the member is cast on, marked in the running order: a soft tint plus a "you" pill. */
+.callsheet-table tr.callsheet-mine td {
+    background: var(--clay-tint);
+}
+.callsheet-youtag {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 1px 7px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--clay-tint-border);
+    background: var(--surface);
+    color: var(--clay-text);
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-meta);
+    vertical-align: middle;
+}
+.callsheet-myparts {
+    margin-top: 18px;
+}
+.callsheet-partlist {
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.callsheet-part {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 4px 14px;
+    align-items: baseline;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-ctl);
+}
+.callsheet-part-song {
+    font-weight: 600;
+    min-width: 0;
+}
+.callsheet-part-label {
+    margin-left: 8px;
+    font-weight: 400;
+    font-size: var(--text-sm);
+    color: var(--muted);
+}
+.callsheet-part-facts {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+}
+.callsheet-part-conf {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-meta);
+    color: var(--teal-text);
+    white-space: nowrap;
+}
+.callsheet-part-conf.muted {
+    color: var(--faint);
+}
+.callsheet-whoscoming {
+    margin: 8px 0 0;
+}
+.callsheet-nopublish {
+    max-width: 720px;
+}
+@media (max-width: 620px) {
+    .callsheet .page-head {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .callsheet-part {
+        grid-template-columns: 1fr;
+        gap: 3px;
+    }
+    .callsheet-part-conf {
+        justify-self: start;
+    }
+}
+
+/* The member's own solo history on their home: a count-vs-average headline, then the list. */
+.me-solos {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid var(--divider);
+}
+.me-solos-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.me-solos-head h2 {
+    margin: 0;
+    font-size: var(--text-title);
+    font-weight: 600;
+}
+.me-solos-stat {
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    letter-spacing: var(--tracking-meta);
+    color: var(--muted);
+}
+.me-solos-empty {
+    margin: 10px 0 0;
+    color: var(--muted);
+    font-size: var(--text-sm);
+}
+.me-solos-list {
+    list-style: none;
+    margin: 12px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.me-solo {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-ctl);
+}
+.me-solo-title {
+    font-weight: 600;
+}
+.me-solo-meta {
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    letter-spacing: var(--tracking-meta);
+    color: var(--muted);
+    text-align: right;
+}
+
+.rep-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+    align-items: center;
+}
+.archive-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.archive-err {
+    font-size: var(--text-caption);
+    color: var(--bad);
+}
+
+/* Setlist manager (per-event) -------------------------------------------- */
+.setlist-mgr {
+    max-width: 720px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+.setlist-row,
+.setlist-new {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 12px 16px;
+}
+.setlist-row .part-label,
+.setlist-new .part-label {
+    flex: 1;
+    box-sizing: border-box;
+    height: 36px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0 10px;
+    color: var(--text);
+    font-size: var(--text-sm);
+}
+/* Read-only status glance on the setlist row (draft/final/performed). Status is set in the
+   editor now; the row just shows it. */
+.setlist-status {
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 4px 9px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-badge);
+}
+.setlist-status.final {
+    color: var(--teal-text);
+    border-color: var(--teal-tint-border);
+    background: var(--teal-tint);
+}
+/* The "published" / "visible" glance on a row, and the member-visibility note. */
+.setlist-published {
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    letter-spacing: var(--tracking-meta);
+    color: var(--teal-text);
+}
+.setlist-new {
+    border-style: dashed;
+    box-shadow: none;
+}
+
+/* RSVP ------------------------------------------------------------------- */
+.rsvp {
+    max-width: 720px;
+    margin-bottom: 18px;
+}
+/* One flush card of hairline rows instead of a card per singer, so a full roster's RSVPs
+   fit the screen without a card's padding and gap repeated on every row. */
+.rsvp-list {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+.rsvp-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--border-soft);
+}
+.rsvp-row:last-child {
+    border-bottom: none;
+}
+.rsvp-name {
+    font-size: var(--text-body);
+    font-weight: 600;
+}
+.rsvp-opts {
+    display: flex;
+    gap: 6px;
+}
+/* RSVP sections: group the editable rows by home section (mirroring the read-only Event
+   roster), each with a live tally, so a large roster reads section by section. */
+.rsvp-section {
+    margin-bottom: 16px;
+}
+.rsvp-section .rsvp-list {
+    margin-bottom: 0;
+}
+.rsvp-section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 6px;
+}
+.rsvp-tally {
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    color: var(--muted);
+}
+
+/* Casting ---------------------------------------------------------------- */
+/* Casting is a narrow, focused surface; cap the page to the card width so the column centers in
+   the viewport instead of hugging the left of a wide page. */
+.casting-page {
+    max-width: 600px;
+}
+.casting {
+    max-width: 560px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.cast-part {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 16px 18px;
+}
+.cast-part-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+.cast-label {
+    font-size: var(--text-title);
+    font-weight: 600;
+}
+.cast-need {
+    color: var(--muted);
+    font-size: var(--text-sm);
+}
+.cast-status {
+    margin-left: auto;
+    font-size: var(--text-caption);
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+}
+.cast-status.ok {
+    color: var(--teal-text);
+    border-color: var(--teal-tint-border);
+}
+.cast-status.short {
+    color: var(--amber-deep);
+    border-color: var(--amber);
+}
+.cast-empty {
+    color: var(--muted);
+    font-size: var(--text-sm);
+    margin-bottom: 8px;
+}
+/* Covers as an aligned mini-table: the column labels appear once as a header, then a row per
+   cover, so the "self-report / your read" labels stop repeating on every line and the controls
+   line up in columns. display:contents drops each row's cells into the shared grid. */
+.cast-covers {
+    /* Two groups: identity (singer + lead star) packed left, the confidence assessment (self-report,
+     your read, remove) packed right, with the slack collected in one spacer column between them.
+     max-content columns + a shrinkable 1fr spacer means long names never overflow. */
+    display: grid;
+    grid-template-columns: minmax(
+            90px,
+            max-content
+        ) max-content 1fr max-content max-content max-content;
+    align-items: center;
+    gap: 6px 12px;
+    margin-top: 4px;
+}
+.cover-spacer {
+    min-width: 12px;
+}
+.cast-covers-head,
+.cast-cover {
+    display: contents;
+}
+.cast-covers-head > span {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--muted-2);
+}
+.cover-name {
+    font-size: var(--text-body);
+}
+/* Star toggle for the featured lead (matches the roster's home-section star). */
+.cover-lead {
+    justify-self: start;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: var(--text-title);
+    line-height: 1;
+    padding: 2px 4px;
+    color: var(--faint);
+}
+.cover-lead.on {
+    color: var(--clay);
+}
+/* Member-owned self-report, read-only here. */
+.cover-selfreport {
+    font-size: var(--text-caption);
+    color: var(--muted);
+}
+/* The "Your read" cell stacks the select over the confirmation caption (shown only
+   for a persisted-solid cover), so the date sits under the control that set it. */
+.cover-read-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+}
+.cover-read {
+    box-sizing: border-box;
+    height: 34px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0 8px;
+    color: var(--text);
+    font-size: var(--text-sm);
+}
+.cover-confirmed {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    color: var(--muted-2);
+    white-space: nowrap;
+}
+.cover-remove {
+    justify-self: end;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--faint);
+    font-size: var(--text-subhead);
+    line-height: 1;
+    padding: 0 6px;
+    border-radius: 6px;
+}
+.cover-remove:hover {
+    color: var(--bad);
+    background: var(--surface-2);
+}
+.cast-add {
+    margin-top: 8px;
+    box-sizing: border-box;
+    height: 36px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0 9px;
+    color: var(--text);
+    font-size: var(--text-sm);
+}
+
+/* Range-aware casting suggestions: a collapsed "who could cover this" disclosure
+   per part. Primary lists the section ranked by range fit; also-consider lists
+   cross-section singers whose range covers the line. Advisory, never a gate. */
+.cast-suggest {
+    margin-top: 10px;
+    border-top: 1px solid var(--border);
+    padding-top: 8px;
+}
+.cast-suggest > summary {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    cursor: pointer;
+    list-style: none;
+    font-size: var(--text-sm);
+    color: var(--muted);
+}
+.cast-suggest > summary::-webkit-details-marker {
+    display: none;
+}
+.cast-suggest > summary::before {
+    content: "▸";
+    color: var(--faint);
+    font-size: var(--text-caption);
+}
+.cast-suggest[open] > summary::before {
+    content: "▾";
+}
+.suggest-demand {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    color: var(--muted-2);
+}
+.suggest-body {
+    padding: 8px 0 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.suggest-hint {
+    font-size: var(--text-caption);
+    color: var(--muted);
+}
+.suggest-group-title {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--muted-2);
+    margin-bottom: 4px;
+}
+.suggest-row {
+    display: flex;
+    /* Baseline, not center: the name (13px) and the smaller all-caps fit badge (10px)
+     share a text baseline, so their bottoms line up. The add button re-centers below. */
+    align-items: baseline;
+    gap: 8px;
+    padding: 3px 0;
+}
+.suggest-name {
+    font-size: var(--text-sm);
+}
+.suggest-fit {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+}
+.fit-comfortable {
+    color: var(--teal);
+}
+.fit-edge {
+    color: var(--amber);
+}
+.fit-out {
+    color: var(--clay);
+}
+.fit-unknown {
+    color: var(--faint);
+}
+.suggest-note {
+    font-size: var(--text-caption);
+    color: var(--muted);
+}
+.suggest-add {
+    margin-left: auto;
+    align-self: center; /* the row is baseline-aligned for its text; the button centers */
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 3px 9px;
+    color: var(--text);
+    font-size: var(--text-caption);
+    cursor: pointer;
+}
+.suggest-add:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+/* Rehearsal agenda (R2): the saved, ordered plan on top, ranked suggestions to pull
+   from below, then a picker for any other song. Reason chips say why a song surfaced;
+   the run pill says whether it can be fully run given who has RSVP'd in. */
+.agenda {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.agenda-intro {
+    font-size: var(--text-caption);
+    color: var(--muted);
+    margin: 0;
+}
+.agenda-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.agenda-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+}
+.agenda-pos {
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    color: var(--muted-2);
+    line-height: 1.7;
+    min-width: 16px;
+}
+.agenda-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+.agenda-title {
+    font-size: var(--text-sm);
+    color: var(--text);
+}
+.agenda-tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+.agenda-reason,
+.agenda-run {
+    font-size: var(--text-micro);
+    padding: 1px 7px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+.agenda-reason.coverage-risk {
+    background: var(--clay-tint);
+    color: var(--clay-text);
+    border-color: var(--clay-tint-border);
+}
+.agenda-reason.learning-gap {
+    background: var(--teal-tint);
+    color: var(--teal-text);
+    border-color: var(--teal-tint-border);
+}
+.agenda-reason.stale {
+    background: var(--amber-tint);
+    color: var(--amber-deep);
+    border-color: var(--amber-tint-border);
+}
+.agenda-reason.upcoming-gig {
+    background: var(--surface);
+    color: var(--muted);
+    border-color: var(--border);
+}
+.agenda-run.full {
+    background: var(--teal-tint);
+    color: var(--teal-text);
+    border-color: var(--teal-tint-border);
+}
+.agenda-run.short {
+    background: var(--clay-tint);
+    color: var(--clay-text);
+    border-color: var(--clay-tint-border);
+}
+.agenda-note {
+    box-sizing: border-box;
+    width: 100%;
+    height: 30px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0 8px;
+    color: var(--text);
+    font-size: var(--text-caption);
+}
+.agenda-remove {
+    min-width: 30px;
+    padding: 4px 6px;
+}
+/* The agenda row is its own drop target (unlike the setlist, it has no inner .song), so the
+   dragover highlight lands directly on the row. Drag mechanics reuse .reorder / .grip /
+   .move-btn / .song-wrap from the setlist. */
+.song-wrap.dragover.agenda-row {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent) inset;
+}
+.agenda-remove:hover:not(:disabled) {
+    border-color: var(--bad);
+    color: var(--bad);
+}
+.agenda-empty {
+    font-size: var(--text-caption);
+    color: var(--muted);
+    margin: 0;
+    padding: 12px;
+    background: var(--surface-2);
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+}
+/* Rehearsal record (R3): what was run (stamps last_rehearsed) and who came (attendance).
+   The fact after the plan. Reuses the whatif-toggle for present/absent. */
+.record {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.record-intro {
+    font-size: var(--text-caption);
+    color: var(--muted);
+    margin: 0;
+}
+.record-date {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.record-date .ctl {
+    box-sizing: border-box;
+    height: 34px;
+    width: fit-content;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0 9px;
+    color: var(--text);
+    font-size: var(--text-sm);
+}
+.record-block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.record-count {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    color: var(--muted-2);
+    font-weight: normal;
+}
+.record-songs {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.record-song {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 7px 10px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+.record-check {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    cursor: pointer;
+    min-width: 0;
+}
+.record-song-title {
+    font-size: var(--text-sm);
+    color: var(--text);
+}
+.record-song-last {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    color: var(--muted-2);
+    white-space: nowrap;
+}
+.record-empty {
+    font-size: var(--text-caption);
+    color: var(--muted);
+    margin: 0;
+    padding: 12px;
+    background: var(--surface-2);
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+}
+.record-members {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.record-member {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 5px 10px;
+}
+.record-member-name {
+    font-size: var(--text-sm);
+    color: var(--text);
+}
+.record-rsvp {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    color: var(--faint);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+}
+.record-toggle {
+    display: flex;
+    gap: 4px;
+}
+
+/* Prep targets (R4): a gig's "have these ready" set, each with a ready status, plus the
+   cross-gig "behind schedule" list on its own insight. */
+.prep {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.prep-intro {
+    font-size: var(--text-caption);
+    color: var(--muted);
+    margin: 0;
+}
+.prep-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.prep-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+}
+.prep-title {
+    flex: 1;
+    font-size: var(--text-sm);
+    color: var(--text);
+    min-width: 0;
+}
+.prep-tags {
+    display: flex;
+    gap: 6px;
+}
+.prep-status {
+    font-size: var(--text-micro);
+    padding: 1px 7px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+.prep-status.ready {
+    background: var(--teal-tint);
+    color: var(--teal-text);
+    border-color: var(--teal-tint-border);
+}
+.prep-status.not-ready {
+    background: var(--amber-tint);
+    color: var(--amber-deep);
+    border-color: var(--amber-tint-border);
+}
+.prep-status.undercast {
+    background: var(--clay-tint);
+    color: var(--clay-text);
+    border-color: var(--clay-tint-border);
+}
+.prep-remove {
+    min-width: 30px;
+    padding: 4px 6px;
+}
+.prep-remove:hover:not(:disabled) {
+    border-color: var(--bad);
+    color: var(--bad);
+}
+.prep-empty {
+    font-size: var(--text-caption);
+    color: var(--muted);
+    margin: 0;
+    padding: 12px;
+    background: var(--surface-2);
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+}
+/* Behind schedule: the cross-gig roll-up of at-risk targeted songs, soonest deadline first. */
+.behind-list {
+    list-style: none;
+    margin: 20px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.behind-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+}
+.behind-main {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+.behind-title {
+    font-size: var(--text-sm);
+    color: var(--text);
+    text-decoration: none;
+}
+.behind-title:hover {
+    color: var(--accent);
+}
+.behind-tags {
+    display: flex;
+    gap: 6px;
+}
+.behind-due {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 3px;
+    text-align: right;
+    white-space: nowrap;
+}
+.behind-days {
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    color: var(--muted-2);
+}
+.behind-days.urgent {
+    color: var(--clay-text);
+}
+.behind-gig {
+    font-size: var(--text-micro);
+    color: var(--muted);
+    text-decoration: none;
+}
+.behind-gig:hover {
+    color: var(--accent);
+}
+
+/* Index ------------------------------------------------------------------ */
+.cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+}
+/* At the console width (Insights), the menu becomes a 2-column card grid. Settings keeps its
+   single column at the narrower page width, since it is not promoted. */
+.page.hub .cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+}
+@media (max-width: 900px) {
+    .page.hub .cards {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+@media (max-width: 600px) {
+    .page.hub .cards {
+        grid-template-columns: 1fr;
+    }
+}
+.card {
+    display: block;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 18px 20px;
+    transition: border-color 0.12s ease;
+}
+.card:hover {
+    border-color: var(--muted-2);
+}
+.card:hover {
+    border-color: var(--accent);
+    text-decoration: none;
+}
+
+/* A subtle hover lift on the interactive cards, and a short fade as route content arrives. Both
+   are gated by prefers-reduced-motion at the foot of this block. */
+.stat-card,
+.card {
+    transition:
+        transform 0.14s ease,
+        box-shadow 0.14s ease,
+        border-color 0.14s ease;
+}
+.stat-card:hover,
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px -8px rgba(15, 20, 26, 0.22);
+}
+/* Opacity only (no transform): a transform in the filled page animation promotes .page to its own
+   layer and suppresses the hover-lift transform on the cards inside it. */
+@keyframes route-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+.page {
+    animation: route-fade-in 0.22s ease both;
+}
+@media (prefers-reduced-motion: reduce) {
+    .stat-card:hover,
+    .card:hover {
+        transform: none;
+    }
+    .page {
+        animation: none;
+    }
+}
+.card .card-title {
+    font-weight: 600;
+    color: var(--text);
+}
+.card .card-sub {
+    color: var(--muted);
+    font-size: var(--text-body);
+    margin-top: 4px;
+}
+/* Each hub card previews one number on the title line: quiet by default, amber when it
+   is a count worth acting on (songs at risk, singers never given a solo). */
+.card-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+}
+.card-stat {
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+    white-space: nowrap;
+}
+.card-stat.warn {
+    color: var(--amber-deep);
+}
+/* Menu hubs (Insights, Settings, My space) are a short index, not a wide dashboard. Cap them to
+   a reading column so the cards fill it instead of stranding across the 1080 console, and let the
+   first card read a step larger so the page has a clear entry point instead of five equal tiles. */
+.page.hub-menu {
+    max-width: 680px;
+}
+.hub-menu .card:first-child {
+    padding: 22px 24px;
+}
+.hub-menu .card:first-child .card-title {
+    font-size: var(--text-subhead);
+}
+.hub-menu .card:first-child .card-stat {
+    font-size: var(--text-body);
+}
+
+/* Interactive setlist ---------------------------------------------------- */
+.perform {
+    background: var(--accent-btn);
+    color: var(--on-accent);
+    border: none;
+    border-radius: var(--radius-ctl);
+    padding: 9px 16px;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: var(--shadow-ctl);
+}
+.perform:hover:not(:disabled) {
+    background: var(--accent-btn-hover);
+}
+.perform:disabled {
+    opacity: 0.55;
+    cursor: default;
+}
+
+.status {
+    background: var(--teal-tint);
+    border: 1px solid var(--teal-tint-border);
+    border-radius: var(--radius-ctl);
+    padding: 10px 14px;
+    font-size: var(--text-body);
+    margin-bottom: 16px;
+}
+
+.set-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+}
+.manual-flag {
+    font-size: var(--text-caption);
+    color: var(--warn);
+}
+
+.empty {
+    color: var(--muted);
+    font-size: var(--text-body);
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-card);
+    padding: 18px 16px;
+}
+
+/* Actionable empty state: the dashed .empty card carries a lead line and a real link, so a
+   first-timer acts from inside the void instead of hunting the control up in the page head. */
+.empty p {
+    margin: 0;
+}
+.empty-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 12px;
+    font-weight: 600;
+    color: var(--accent);
+}
+.empty-cta:hover {
+    color: var(--clay-deep);
+    text-decoration: none;
+}
+.empty-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+    margin-top: 12px;
+}
+.empty-actions .empty-cta {
+    margin-top: 0;
+}
+/* A static readiness legend under the empty repertoire card: a preview of the bands that
+   fill in once songs are added. */
+.empty-legend {
+    margin-top: 14px;
+}
+
+/* Onboarding setup rail — stands in for the "Next event" hero on a brand-new ensemble. Three
+   steps (singers, book, event); each fills teal as its count crosses zero, reusing the
+   readiness "done = teal" language. Every token is already in the dashboard file. */
+.setup-rail {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 22px 24px 10px;
+    margin-bottom: 16px;
+}
+.setup-rail .eyebrow {
+    color: var(--clay-text);
+}
+.setup-title {
+    font-size: var(--text-h1);
+    font-weight: 700;
+    letter-spacing: var(--tracking-tight);
+    margin: 4px 0 6px;
+}
+.setup-body {
+    color: var(--muted);
+    font-size: var(--text-sm);
+    max-width: 560px;
+    margin: 0 0 16px;
+}
+.setup-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.setup-step {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 0;
+    border-top: 1px solid var(--divider);
+}
+.setup-step:first-child {
+    border-top: none;
+}
+.setup-step-num {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    font-weight: 600;
+}
+.setup-step.done .setup-step-num {
+    background: var(--teal);
+    border-color: var(--teal);
+    color: var(--on-accent);
+}
+.setup-step-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    flex: 1;
+    min-width: 0;
+}
+.setup-step-title {
+    font-weight: 600;
+    color: var(--text);
+}
+.setup-step.done .setup-step-title {
+    color: var(--muted);
+}
+.setup-step-sub {
+    color: var(--muted);
+    font-size: var(--text-sm);
+}
+.setup-step-cta {
+    flex-shrink: 0;
+    font-weight: 600;
+    color: var(--accent);
+    white-space: nowrap;
+}
+.setup-step-cta:hover {
+    color: var(--clay-deep);
+    text-decoration: none;
+}
+.setup-step-cta.primary {
+    background: var(--accent-btn);
+    color: var(--on-accent);
+    padding: 8px 14px;
+    border-radius: var(--radius-ctl);
+}
+.setup-step-cta.primary:hover {
+    color: var(--on-accent);
+}
+
+/* Roster onboarding: a dashed add-tile as the first grid cell, matching card size, so a
+   one-director roster reads as "one real card, one add slot" not one lonely card. */
+.roster-add-tile {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-card);
+    background: var(--surface);
+    padding: 18px 18px 20px;
+    color: var(--muted);
+}
+.roster-add-tile p {
+    margin: 0;
+    font-size: var(--text-sm);
+}
+
+/* Insights card stat when there is genuinely no data yet: a dim em-dash, so zero-as-empty
+   does not read as zero-as-all-clear. */
+.card-stat.none {
+    color: var(--faint);
+}
+
+/* Drag wrapper around a song card. The card keeps its own border; the wrapper
+   adds the drag affordance and drop highlight. */
+.song-wrap.dragging {
+    opacity: 0.5;
+}
+.song-wrap.dragover .song {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent) inset;
+}
+/* Reorder controls, shared by the setlist and the rehearsal agenda: a grip to drag plus up/down
+   buttons for the keyboard and screen-reader path. A tidy vertical column of equal-width controls
+   with room to breathe and clear hover affordances. Library-free; the drag lives in useListReorder. */
+.reorder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+}
+.grip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 22px;
+    border-radius: var(--radius-ctl);
+    color: var(--faint);
+    font-size: 15px;
+    letter-spacing: -2px;
+    line-height: 1;
+    user-select: none;
+    cursor: grab;
+    /* Claim the touch gesture so a drag on the grip reorders instead of scrolling the page. */
+    touch-action: none;
+    transition:
+        background 0.12s ease,
+        color 0.12s ease;
+}
+.grip:hover {
+    background: var(--surface-2);
+    color: var(--muted);
+}
+.grip:active {
+    cursor: grabbing;
+    background: var(--surface-2);
+    color: var(--text);
+}
+/* Keyboard and screen-reader accessible reorder, alongside the pointer-drag grip. */
+.move-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 20px;
+    padding: 0;
+    font-size: var(--text-caption);
+    line-height: 1;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    transition:
+        border-color 0.12s ease,
+        color 0.12s ease,
+        background 0.12s ease;
+}
+.move-btn:hover:not(:disabled) {
+    border-color: var(--accent);
+    color: var(--text);
+    background: var(--surface-2);
+}
+.move-btn:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+.locked-banner {
+    margin: 0 0 16px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: var(--text-body);
+}
+
+.row-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: flex-end;
+}
+.ctl {
+    font-size: var(--text-caption);
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--muted);
+    cursor: pointer;
+}
+.ctl:hover:not(:disabled) {
+    color: var(--text);
+    border-color: var(--accent);
+}
+.ctl:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+.ctl.on {
+    color: var(--clay-text);
+    border-color: var(--accent);
+    background: var(--clay-tint);
+}
+/* Destructive controls read destructive at rest (clay text), not only on hover. */
+.ctl.danger {
+    color: var(--clay-text);
+}
+.ctl.danger:hover:not(:disabled) {
+    color: var(--clay-deep);
+    border-color: var(--clay-tint-border);
+}
+/* A destructive HEADER action is NOT the page's primary action, so it stays a quiet ghost at
+   rest (clay ink, no fill) and only tints on hover — it must never sit in the page-head reading
+   as a filled primary competing with Save. Pair with .regen for size. */
+.head-actions .ctl.danger {
+    background: transparent;
+    border-color: transparent;
+}
+.head-actions .ctl.danger:hover:not(:disabled) {
+    background: var(--clay-tint);
+    border-color: var(--clay-tint-border);
+}
+.head-actions .ctl.danger:hover:not(:disabled) {
+    color: var(--clay-deep);
+    border-color: var(--clay-deep);
+}
+
+.head-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+/* A link-button (<a>) inherits the body line-height while a <button> uses line-height:normal,
+   and .perform is borderless where .ctl has a border — so a mixed action row renders at up to
+   three heights. Pin every control to one box: fixed height, border-box, flex-centered text. */
+.head-actions .ctl,
+.head-actions .perform {
+    display: inline-flex;
+    align-items: center;
+    box-sizing: border-box;
+    height: 36px;
+    line-height: 1;
+}
+
+/* Three side-by-side setup modules under the setlist header: the variety dial, the
+   auto-arrange lever, and the running-time budget. Each is a titled card of equal
+   height (buttons pinned to a shared baseline); they collapse to one column when narrow. */
+.setup-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 20px;
+    align-items: stretch;
+}
+.setup-box {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: var(--text-sm);
+    color: var(--muted);
+}
+.setup-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+}
+.setup-title {
+    color: var(--text);
+    font-weight: 600;
+    font-size: var(--text-body);
+}
+.setup-desc {
+    margin: 0;
+    font-size: var(--text-caption);
+    line-height: 1.5;
+}
+.setup-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: auto; /* pin the foot down so buttons line up across the cards */
+}
+.arrange-box .setup-foot {
+    justify-content: flex-end;
+}
+.setup-note {
+    font-size: var(--text-caption);
+}
+.setup-box .variety-val {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+}
+.setup-box input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+/* The timing module reuses TimingBar; inside a titled card it must not draw a second
+   card, so strip its frame and center the row + track below the title. */
+.timing-box .timing,
+.timing-box .timing-none {
+    border: none;
+    box-shadow: none;
+    background: none;
+    padding: 0;
+    margin: 0;
+}
+.timing-box .timing {
+    margin-top: auto;
+    margin-bottom: auto;
+}
+@media (max-width: 900px) {
+    .setup-row {
+        grid-template-columns: 1fr;
+    }
+}
+.ctl.regen {
+    padding: 9px 14px;
+    font-size: var(--text-body);
+}
+
+/* Playground ------------------------------------------------------------- */
+.pg-new {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.pg-new .part-label {
+    min-width: 200px;
+}
+.pg-name {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid transparent;
+    color: var(--text);
+    font-size: var(--text-h1);
+    line-height: var(--leading-tight);
+    font-weight: 700;
+    padding: 0 0 2px;
+    width: 100%;
+    max-width: 420px;
+}
+.pg-name:hover {
+    border-bottom-color: var(--border);
+}
+.pg-name:focus {
+    outline: none;
+    border-bottom-color: var(--accent);
+}
+.pg-link {
+    margin-top: 24px;
+}
+.pg-link-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.pg-link-row select {
+    box-sizing: border-box;
+    height: 36px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0 8px;
+    color: var(--text);
+    font-size: var(--text-body);
+}
+/* Playground builder rail: the searchable Add-songs library and the use-for-event panel. */
+.set-rail .pg-link {
+    margin-top: 0;
+}
+.set-rail .pg-link-row select {
+    flex: 1;
+    min-width: 0;
+}
+.pg-lib-search {
+    box-sizing: border-box;
+    width: 100%;
+    height: 34px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-ctl);
+    padding: 0 12px;
+    color: var(--text);
+    font-size: var(--text-sm);
+    margin-bottom: 8px;
+}
+.pg-lib-search::placeholder {
+    color: var(--faint);
+}
+.pg-lib-search:focus {
+    outline: none;
+    border-color: var(--clay);
+}
+/* Stack the rail's search, sort, and tag chips; the wrapper owns the spacing. */
+.pg-lib-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+.pg-lib-controls .pg-lib-search {
+    margin-bottom: 0;
+}
+.pg-lib-sort {
+    box-sizing: border-box;
+    width: 100%;
+    height: 34px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-ctl);
+    padding: 0 10px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+}
+.pg-lib-sort:focus {
+    outline: none;
+    border-color: var(--clay);
+}
+.pg-lib-list {
+    display: flex;
+    flex-direction: column;
+    max-height: 46vh;
+    overflow-y: auto;
+    margin: 0 -6px;
+}
+.pg-lib-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 6px;
+    border-radius: 7px;
+}
+.pg-lib-row + .pg-lib-row {
+    border-top: 1px solid var(--border-soft);
+}
+.pg-lib-row:hover {
+    background: var(--surface-2);
+}
+.pg-lib-body {
+    flex: 1;
+    min-width: 0;
+}
+.pg-lib-title {
+    font-size: var(--text-sm);
+    font-weight: 600;
+}
+.pg-lib-meta {
+    font-size: var(--text-eyebrow);
+    color: var(--muted);
+    margin-top: 1px;
+}
+
+/* Learning tracker ------------------------------------------------------- */
+.learning-row {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 14px 18px;
+}
+.learning-row .rep-meta,
+.history-row .rep-meta {
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    letter-spacing: var(--tracking-meta);
+}
+.learning-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+.learning-head .rep-title {
+    font-size: var(--text-title);
+    font-weight: 600;
+}
+.learning-covers {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.learning-cover {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: var(--text-body);
+}
+.learning-cover .rep-meta {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    letter-spacing: var(--tracking-meta);
+}
+
+/* Soloist equity --------------------------------------------------------- */
+.equity {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.equity-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 12px 16px;
+}
+.equity-name {
+    font-size: var(--text-body);
+    font-weight: 600;
+    min-width: 88px;
+}
+.equity-track {
+    flex: 1;
+    height: 10px;
+    background: var(--surface-2);
+    border-radius: 999px;
+    overflow: hidden;
+}
+.equity-bar {
+    height: 100%;
+    border-radius: 999px;
+    background: var(--accent);
+    min-width: 2px;
+}
+.equity-count {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--text-sm);
+    min-width: 20px;
+    text-align: right;
+}
+.equity-row.zero {
+    border-left: 3px solid var(--warn);
+}
+.equity-row.zero .equity-bar {
+    background: transparent;
+}
+
+/* Set notes -------------------------------------------------------------- */
+.set-note {
+    margin-top: 8px;
+}
+.set-note textarea {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 10px;
+    color: var(--text);
+    font-size: var(--text-sm);
+    font-family: inherit;
+    resize: vertical;
+    min-height: 36px;
+}
+.set-note textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+.set-note.read {
+    color: var(--muted);
+    font-size: var(--text-sm);
+    font-style: italic;
+}
+.sheet-table .note-row td {
+    border-bottom: none;
+    padding-top: 0;
+    color: var(--muted);
+    font-size: var(--text-sm);
+    font-style: italic;
+}
+.sheet-table .segue-row td {
+    border-bottom: none;
+    padding-top: 0;
+    color: var(--amber-deep);
+    font-size: var(--text-sm);
+}
+
+/* Recency page: stacked sections (gone cold, then the performed archive). */
+.hist-section + .hist-section {
+    margin-top: 32px;
+}
+.hist-section .panel-title {
+    margin-bottom: 12px;
+}
+
+/* Performed history ------------------------------------------------------ */
+.history-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 14px 18px;
+}
+.history-row .rep-title {
+    font-size: var(--text-title);
+    font-weight: 600;
+}
+.history-row .pg-link-row {
+    margin-top: 4px;
+}
+
+/* Songs (repertoire) toolbar: search, tag chips, sort/status ------------ */
+.songs-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+/* Gigs / Rehearsals tabs over the events list. An underline-style tab bar; the active
+   tab carries the accent. Each tab shows its count. */
+.tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 14px;
+}
+.tab {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    padding: 8px 14px;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: var(--text-sm);
+    font-weight: 600;
+}
+.tab:hover {
+    color: var(--text);
+}
+.tab.on {
+    color: var(--text);
+    border-bottom-color: var(--accent);
+}
+.tab-count {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    color: var(--muted-2);
+    margin-left: 4px;
+}
+.tab.on .tab-count {
+    color: var(--accent);
+}
+/* Tag chips take a full-width row of their own, under the search + controls, so the sort/filter
+   controls stop wrapping onto an orphaned second line (only the repertoire toolbar has chips). */
+.songs-toolbar .filter-chips {
+    flex-basis: 100%;
+}
+.songs-search {
+    flex: 0 1 260px;
+    min-width: 180px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-ctl);
+    padding: 9px 13px;
+    color: var(--text);
+    font-size: var(--text-sm);
+}
+.songs-search::placeholder {
+    color: var(--faint);
+}
+.songs-search:focus {
+    outline: none;
+    border-color: var(--clay);
+}
+.filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+.filter-chip {
+    font-family: var(--font-sans);
+    font-size: var(--text-caption);
+    font-weight: 600;
+    padding: 6px 13px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    transition:
+        background 0.12s ease,
+        color 0.12s ease,
+        border-color 0.12s ease;
+}
+.filter-chip:hover {
+    border-color: var(--muted-2);
+    color: var(--text);
+}
+.filter-chip.on {
+    background: var(--text);
+    color: var(--surface);
+    border-color: var(--text);
+}
+.songs-controls {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+}
+.songs-select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-ctl);
+    padding: 8px 10px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+}
+.songs-select:focus {
+    outline: none;
+    border-color: var(--clay);
+}
+.songs-toggle {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-ctl);
+    padding: 8px 12px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+        background 0.12s ease,
+        color 0.12s ease,
+        border-color 0.12s ease;
+}
+.songs-toggle:hover {
+    border-color: var(--muted-2);
+    color: var(--text);
+}
+.songs-toggle.on {
+    background: var(--accent-btn);
+    color: var(--on-accent);
+    border-color: var(--accent-btn);
+}
+.songs-count {
+    margin: 0 2px 10px;
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--muted);
+}
+.songs-empty {
+    color: var(--muted);
+    padding: 26px 4px;
+}
+
+/* Pagination footer: a page-size selector [10, 25, 50], the current range, and prev/next. Sits
+   below the table card; shared by the director repertoire and the member repertoire browser. */
+.pagination {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    margin: 14px 2px 0;
+}
+.pagination-size {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.pagination-size-label,
+.pagination-range,
+.pagination-page {
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    letter-spacing: var(--tracking-meta);
+    color: var(--muted);
+}
+.pagination-size-label {
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+}
+.pagination-nav {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto; /* push the nav cluster to the far edge */
+}
+.pagination-page {
+    min-width: 96px;
+    text-align: center;
+}
+.pagination-btn {
+    height: 34px;
+    padding: 0 14px;
+    border-radius: var(--radius-ctl);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: var(--text-sm);
+    cursor: pointer;
+}
+.pagination-btn:hover:not(:disabled) {
+    border-color: var(--clay);
+}
+.pagination-btn:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+@media (max-width: 620px) {
+    .pagination-nav {
+        margin-left: 0;
+    }
+}
+
+/* Songs table: status-dot rows over the shared .hub-table skin ----------- */
+/* Flush variant: drop the card's inner padding and clip to the radius so the
+   hairline rows run edge-to-edge; the cells carry their own horizontal padding. */
+.hub-table-card.songs-card {
+    padding: 0;
+    overflow: hidden;
+}
+.hub-table.songs-table thead th,
+.hub-table.songs-table tbody td {
+    padding-left: 18px;
+    padding-right: 18px;
+}
+/* Larger, more legible column headers than the base hub-table label size. */
+.hub-table.songs-table thead th {
+    font-size: var(--text-eyebrow);
+    letter-spacing: var(--tracking-label);
+}
+.hub-table.songs-table td.cell-key {
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    font-weight: 600;
+    /* Keys are data, not status — ink, not teal, so a key never reads as a readiness signal.
+     Teal stays reserved for the Ready dot that can sit in the same row. */
+    color: var(--text);
+    white-space: nowrap;
+}
+.hub-table.songs-table td.cell-tags {
+    font-size: var(--text-caption);
+    color: var(--muted);
+}
+.hub-table.songs-table td.cell-int {
+    white-space: nowrap;
+}
+.hub-table.songs-table td.cell-int .dots {
+    width: auto;
+    justify-content: flex-start;
+}
+.hub-table.songs-table td.cell-status {
+    white-space: nowrap;
+}
+.hub-table.songs-table td.cell-actions {
+    text-align: right;
+    white-space: nowrap;
+}
+.song-name-line {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+.song-name {
+    font-weight: 600;
+    color: var(--text);
+    text-decoration: none;
+}
+a.song-name:hover {
+    color: var(--clay-text);
+}
+/* The chart marker in the member repertoire's sub line: a link for a URL, a quiet marker otherwise. */
+.song-chartlink {
+    color: var(--clay-text);
+    text-decoration: none;
+}
+.song-chartlink:hover {
+    text-decoration: underline;
+}
+.song-chartref {
+    color: var(--muted);
+}
+.song-flag {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    padding: 2px 6px;
+    border-radius: var(--radius-badge);
+}
+.song-flag.explicit {
+    color: var(--clay-text);
+    background: var(--clay-tint);
+    border: 1px solid var(--clay-tint-border);
+}
+.song-flag.book {
+    color: var(--muted);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+}
+.song-flag.archived {
+    color: var(--muted);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+}
+.song-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--text-caption);
+    font-weight: 600;
+}
+.song-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex: none;
+}
+.song-status.ready {
+    color: var(--teal-text);
+}
+.song-dot.ready {
+    background: var(--teal);
+}
+.song-status.polish {
+    color: var(--amber-deep);
+}
+.song-dot.polish {
+    background: var(--amber);
+}
+.song-status.learning {
+    color: var(--clay-text);
+}
+.song-dot.learning {
+    background: var(--clay);
+}
+.song-status.dormant {
+    color: var(--muted);
+}
+.song-dot.dormant {
+    background: var(--faint);
+}
+.hub-table tbody tr.song-dormant {
+    opacity: 0.6;
+}
+.hub-table tbody tr.song-archived {
+    opacity: 0.5;
+}
+.hub-table tbody tr.song-archived .song-name {
+    text-decoration: line-through;
+}
+
+/* Line-level actions menu (kebab trigger + portalled popover) ------------ */
+.row-menu-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: var(--radius-ctl);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition:
+        background 0.12s ease,
+        color 0.12s ease,
+        border-color 0.12s ease;
+}
+.row-menu-trigger:hover,
+.row-menu-trigger[aria-expanded="true"] {
+    background: var(--surface-2);
+    color: var(--text);
+    border-color: var(--border);
+}
+/* Portalled to <body>, so it is positioned in the viewport (position: fixed set inline). */
+.row-menu-pop {
+    position: fixed;
+    z-index: 60;
+    min-width: 176px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-ctl);
+    box-shadow: var(--shadow-card);
+}
+.row-menu-item-wrap {
+    display: block;
+}
+.row-menu-item {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: left;
+    padding: 7px 10px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    line-height: var(--leading-snug);
+    text-decoration: none;
+    cursor: pointer;
+}
+.row-menu-item:hover,
+.row-menu-item:focus-visible {
+    background: var(--surface-2);
+    outline: none;
+    /* Neutralise the global a:hover underline for the Edit/Cast link items so all three
+     items (incl. the Archive <button>, which a:hover never matches) look identical. */
+    text-decoration: none;
+}
+.row-menu-item:disabled {
+    color: var(--faint);
+    cursor: default;
+}
+/* A destructive item reads destructive at rest, like the row-level .ctl.danger, and tints on
+   hover. Disabled still wins (faint), so a blocked Delete never looks armed. */
+.row-menu-item.danger {
+    color: var(--clay-text);
+}
+.row-menu-item.danger:hover:not(:disabled),
+.row-menu-item.danger:focus-visible:not(:disabled) {
+    background: var(--clay-tint);
+}
+.row-menu-item.danger:disabled {
+    color: var(--faint);
+}
+.row-menu-item-wrap .archive-err {
+    padding: 0 10px 4px;
+}
+
+/* Insights: coverage risk + what-if ------------------------------------- */
+.insight-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left-width: 3px;
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 14px 18px;
+}
+.insight-row.undercast {
+    border-left-color: var(--bad);
+}
+.insight-row.single-point {
+    border-left-color: var(--warn);
+}
+.insight-row .rep-title {
+    font-size: var(--text-title);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.insight-row .rep-meta {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    letter-spacing: var(--tracking-meta);
+    margin-top: 3px;
+}
+/* The critical singers are the row's payload; lift them to ink so the eye lands on who breaks
+   the song, not the repeated "lose any one" boilerplate around them. */
+.insight-row .rep-critical {
+    color: var(--text);
+    font-weight: 600;
+}
+
+/* Coverage risk: a dense table per severity group, replacing the old per-song cards. The
+   group heading carries the risk; each row is the song (linked to its casting screen) plus
+   the parts or covers that break it. Reuses the hub-table skin. */
+.coverage-card {
+    padding: 0;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+.coverage-table thead th,
+.coverage-table tbody td {
+    padding-left: 18px;
+    padding-right: 18px;
+}
+.coverage-table thead th {
+    font-size: var(--text-eyebrow);
+    letter-spacing: var(--tracking-label);
+}
+/* The cover cell is all critical items in ink (.rep-critical); the muted base only tints
+   the separating commas. */
+.coverage-table td.coverage-cover {
+    color: var(--muted);
+}
+
+/* Your parts: a practice list. Each row shows the song, part, the director's readiness, and
+   the member's own self-read; expanding it reveals the pitch to blow, key, tempo, chart, and
+   (for solos) how the line sits against the member's range. */
+.myparts-summary {
+    color: var(--muted);
+    font-size: var(--text-sm);
+    margin: 0 0 14px;
+}
+.myparts-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.mypart {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+}
+.mypart-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+}
+.mypart-disclosure {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    row-gap: 4px;
+    background: none;
+    border: 0;
+    padding: 4px 0;
+    margin: 0;
+    text-align: left;
+    cursor: pointer;
+    color: inherit;
+    font: inherit;
+}
+.mypart-disclosure:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+.mypart-caret {
+    flex: none;
+    width: 12px;
+    color: var(--faint);
+    font-size: var(--text-caption);
+}
+/* Bind the caret and the title into one unit so the caret sits on the title's first line and never
+   wraps to a line of its own; only the badges drop below when the row is tight. */
+.mypart-lead {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+.mypart-headline {
+    /* Grow to take the row and keep the song + part together; the badges wrap to their own line
+     when the row is tight (e.g. an on-book badge is present), rather than splitting song from part. */
+    flex: 1 1 auto;
+    display: flex;
+    align-items: baseline;
+    flex-wrap: nowrap;
+    gap: 8px;
+    min-width: 0;
+}
+.mypart-song {
+    min-width: 0;
+}
+.mypart-song {
+    font-weight: 600;
+    color: var(--text);
+}
+.mypart-part {
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    color: var(--muted);
+}
+.mypart-badges {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+    flex: none;
+}
+.mypart-conf {
+    flex: none;
+}
+.mypart-error {
+    color: var(--bad);
+    font-size: var(--text-sm);
+    margin: 0;
+    padding: 0 14px 10px;
+}
+.mypart-detail {
+    border-top: 1px solid var(--divider);
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.mypart-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 28px;
+    margin: 0;
+}
+.mypart-fact {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.mypart-fact dt {
+    font-size: var(--text-micro);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--faint);
+}
+.mypart-fact dd {
+    margin: 0;
+    color: var(--text);
+    font-size: var(--text-body);
+}
+.mypart-fact-pitch dd {
+    font-size: var(--text-subhead);
+    font-weight: 600;
+}
+.mypart .mono {
+    font-family: var(--font-mono);
+}
+.mypart-meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 20px;
+    font-size: var(--text-sm);
+}
+.mypart-chartlink {
+    color: var(--accent);
+    font-weight: 600;
+}
+.mypart-nochart {
+    color: var(--muted);
+}
+.mypart-range {
+    display: inline-flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.mypart-range-label {
+    font-size: var(--text-micro);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--faint);
+}
+.mypart-fit.ok {
+    color: var(--teal-text);
+}
+.mypart-fit.warn {
+    color: var(--clay-text);
+}
+.mypart-fit.muted {
+    color: var(--muted);
+}
+
+/* Per-part coverage: needs-vs-cast, a backup flag, and who else covers the line. */
+.mypart-coverage {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 12px;
+    font-size: var(--text-sm);
+}
+.mypart-covers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    min-width: 0;
+}
+.mypart-cover {
+    color: var(--muted);
+}
+.mypart-cover:not(:last-child)::after {
+    content: "·";
+    margin-left: 10px;
+    color: var(--faint);
+}
+
+@media (max-width: 620px) {
+    .mypart-row {
+        flex-wrap: wrap;
+    }
+    .mypart-conf,
+    .mypart-conf select {
+        width: 100%;
+    }
+}
+
+.whatif-roster {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+.whatif-member {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 12px 16px;
+}
+.whatif-name {
+    font-size: var(--text-body);
+    font-weight: 600;
+}
+.whatif-toggles {
+    display: flex;
+    gap: 6px;
+}
+/* The active state tints by meaning: in is good, maybe is caution, out is bad.
+   Full-strength borders (maybe already had amber) + the -strong tint fills, so a
+   selected state reads against the grey .ctl chips and the page ground beside it. */
+.whatif-toggle.in.on {
+    color: var(--teal-text);
+    border-color: var(--teal);
+    background: var(--teal-tint-strong);
+}
+.whatif-toggle.tentative.on {
+    color: var(--amber-deep);
+    border-color: var(--amber);
+    background: var(--amber-tint);
+}
+.whatif-toggle.out.on {
+    color: var(--clay-text);
+    border-color: var(--clay-deep);
+    background: var(--clay-tint-strong);
+}
+
+/* The scenario's answer, made the loudest element: a large coverable figure with a
+   left accent (teal when all covered, amber when something breaks) and a delta vs the
+   saved RSVPs. The member toggles above are the quiet control panel that feeds it. */
+.whatif-result {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left-width: 4px;
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 16px 20px;
+    margin-bottom: 20px;
+}
+.whatif-result.good {
+    border-left-color: var(--good);
+}
+.whatif-result.warn {
+    border-left-color: var(--warn);
+}
+.whatif-result-figure {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+.whatif-result-count {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--text-metric);
+    font-weight: 700;
+    line-height: 1;
+    color: var(--text);
+}
+.whatif-result.good .whatif-result-count {
+    color: var(--good);
+}
+.whatif-result.warn .whatif-result-count {
+    color: var(--amber-deep);
+}
+.whatif-result-label {
+    font-size: var(--text-body);
+    color: var(--muted);
+}
+.whatif-result-delta {
+    display: flex;
+    gap: 8px;
+    font-size: var(--text-sm);
+}
+.whatif-result-delta .muted {
+    color: var(--muted);
+}
+.whatif-result-delta .delta {
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    padding: 2px 8px;
+    border-radius: var(--radius-pill);
+}
+.whatif-result-delta .delta.break {
+    color: var(--clay-text);
+    background: var(--clay-tint);
+    border: 1px solid var(--clay-tint-border);
+}
+.whatif-result-delta .delta.unlock {
+    color: var(--teal-text);
+    background: var(--teal-tint);
+    border: 1px solid var(--teal-tint-border);
+}
+.whatif-reset {
+    margin-left: auto;
+}
+.whatif-uncoverable {
+    margin-top: 22px;
+}
+
+.callout.broke {
+    background: var(--clay-tint);
+    border: 1px solid var(--clay-tint-border);
+}
+.callout.unlocked {
+    background: var(--teal-tint);
+    border: 1px solid var(--teal-tint-border);
+}
+
+/* Set arc ---------------------------------------------------------------- */
+.arc {
+    margin-bottom: 20px;
+}
+.arc-grid {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    /* Past ~28 songs the columns hit their min width and the arc scrolls, instead of compressing
+     every bar and bpm label into an unreadable sliver. */
+    overflow-x: auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 12px 14px 10px;
+}
+.arc-col {
+    /* Grow to fill for a short set, but stop at a legible floor and let the grid scroll for a long
+     one, rather than shrinking bars and labels to nothing. */
+    flex: 1 0 32px;
+    min-width: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+.arc-track {
+    width: 100%;
+    height: 64px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+.arc-bar {
+    width: 60%;
+    min-height: 4px;
+    border-radius: 4px 4px 0 0;
+    /* Height carries intensity, and the fill tints it by intensity band in the app's own language
+     (teal cool, amber mid, clay hot), so the energy shape reads by colour as well as height. The
+     grey ramp this replaced was also theme-unstable: its light/dark ordering inverted. */
+    background: var(--faint);
+}
+.arc-bar.cool {
+    background: var(--teal);
+}
+.arc-bar.mid {
+    background: var(--amber);
+}
+.arc-bar.hot {
+    background: var(--clay);
+}
+.arc-bar.na {
+    background: var(--border);
+}
+.arc-tempo,
+.arc-pos {
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+}
+.arc-col.seam-warn .arc-track {
+    /* Dashed + deeper so the rough-transition tick stays distinct from an amber (mid) bar beside it. */
+    border-right: 2px dashed var(--amber-deep);
+}
+.arc-legend {
+    font-size: var(--text-caption);
+    color: var(--muted);
+    margin: 8px 0 0;
+}
+
+.ctl.copy {
+    flex-shrink: 0;
+}
+
+/* Running-order sheet ---------------------------------------------------- */
+.sheet-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-body);
+}
+.sheet-table th,
+.sheet-table td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+}
+.sheet-table th {
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--muted);
+    font-weight: 600;
+}
+.sheet-table .num {
+    width: 36px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+}
+.sheet-table .ttl {
+    font-weight: 600;
+}
+.sheet-table .pitch {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-variant-numeric: tabular-nums;
+}
+.sheet-table .len {
+    text-align: right;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+/* Member tables read as one card per song on a phone, instead of a table that scrolls sideways.
+   The header row hides; each cell becomes a labeled line under a prominent title. */
+@media (max-width: 640px) {
+    .hub-table.songs-table.stack-mobile,
+    .sheet-table.callsheet-table.stack-mobile {
+        min-width: 0;
+        font-size: var(--text-body);
+    }
+    .stack-mobile thead {
+        display: none;
+    }
+    .stack-mobile tbody {
+        display: block;
+    }
+    .stack-mobile tbody tr {
+        display: block;
+        padding: 12px 2px;
+    }
+    .stack-mobile tbody tr:not(:last-child) {
+        border-bottom: 1px solid var(--border-soft);
+    }
+    .hub-table.songs-table.stack-mobile tbody td,
+    .sheet-table.callsheet-table.stack-mobile tbody td {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        padding: 3px 0;
+        border-bottom: none;
+        white-space: normal;
+        text-align: left;
+    }
+    .stack-mobile tbody td[data-label]::before {
+        content: attr(data-label);
+        flex: 0 0 72px;
+        font-family: var(--font-mono);
+        font-size: var(--text-micro);
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-label);
+        color: var(--muted-2);
+    }
+    /* The title cell is the card heading: full width, prominent, no label. */
+    .hub-table.songs-table.stack-mobile tbody td.cell-title,
+    .sheet-table.callsheet-table.stack-mobile tbody td.ttl {
+        display: block;
+        font-size: var(--text-title);
+        margin-bottom: 6px;
+    }
+    /* Full-width rows on the call sheet (breaks, notes, segues) stay centered blocks. */
+    .sheet-table.callsheet-table.stack-mobile tbody tr.break-sheet-row td,
+    .sheet-table.callsheet-table.stack-mobile tbody tr.note-row td,
+    .sheet-table.callsheet-table.stack-mobile tbody tr.segue-row td {
+        display: block;
+    }
+}
+
+@media print {
+    .nav,
+    .no-print {
+        display: none !important;
+    }
+    body {
+        background: #fff;
+        color: #000;
+    }
+    /* The sheet's on-screen card chrome is stripped so the printed page stays plain. */
+    .sheet-card {
+        background: none;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+        padding: 0;
+    }
+    .sheet-table th,
+    .sheet-table td {
+        border-bottom: 1px solid #ccc;
+    }
+    .sheet-table th {
+        color: #444;
+    }
+}
+
+/* Roster grouped by home section ---------------------------------------- */
+.home-section {
+    color: var(--text);
+    font-weight: 600;
+}
+
+/* Sections (voice-part) vocabulary manager ------------------------------- */
+.vp-manager {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.vp-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.vp-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 12px 16px;
+}
+/* Name and its metric line read inline, so the row's content spans its width instead of
+   huddling in a narrow left column with a hollow middle. Wraps if a row runs long. */
+.vp-body {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 3px 10px;
+    min-width: 0;
+}
+.vp-body .vp-name {
+    font-size: var(--text-title);
+    font-weight: 600;
+}
+.vp-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+    align-items: center;
+}
+.vp-edit,
+.vp-new {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    width: 100%;
+}
+.vp-new {
+    background: var(--surface-2);
+    border-style: dashed;
+    box-shadow: none;
+    justify-content: flex-start;
+}
+
+/* Event-type manager + event-form type picker ---------------------------- */
+.et-row {
+    align-items: flex-start;
+}
+.et-edit {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+.et-edit-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.et-tags {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+.et-tags-label {
+    font-size: var(--text-caption);
+    color: var(--muted);
+    min-width: 52px;
+    padding-top: 6px;
+}
+.apply-type {
+    align-self: flex-end;
+}
+
+/* Auth (supabase mode only). The bar itself spans the full width (it sits above .page, which
+   is where the nav would be), so .auth-bar-inner caps and centers its content the same way
+   .nav-inner does, rather than letting the mark and the account controls drift to the literal
+   edges of a wide viewport. Two flex groups (brand, account), not a flat row of three items, so
+   justify-content: space-between only ever splits those two apart, never pushes the email away
+   from the sign-out button beside it. */
+.auth-bar {
+    display: flex;
+    justify-content: center;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--surface);
+}
+.auth-bar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    max-width: 1080px;
+    padding: 6px 0;
+    font-size: var(--text-sm);
+    color: var(--muted);
+}
+.auth-bar-brand {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    color: var(--text);
+}
+.auth-bar-account {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.auth-signout {
+    padding: 2px 10px;
+    font-size: var(--text-caption);
+}
+
+/* Auth / entry pages: one centered card, vertically centered in the viewport, with the SetWright
+   mark above it and an optional footer line below. Replaces the top-anchored .login-page column. */
+.auth-shell {
+    min-height: 100svh;
+    display: flex;
+    padding: 40px 20px;
+    box-sizing: border-box;
+}
+.auth-inner {
+    /* margin auto centers on both axes and, unlike flex/grid centering, never clips a card taller
+     than the viewport (it just scrolls). */
+    margin: auto;
+    width: 100%;
+    max-width: 380px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+}
+.auth-brand {
+    display: flex;
+    justify-content: center;
+    align-self: stretch;
+}
+/* Sized against .auth-inner's 380px column, not the viewport, so it holds its proportion to
+   the card below it down to phone widths. picture and img are both forced to block with an
+   unambiguous width (picture's % against .auth-brand's resolved width, img's 100% of picture)
+   so the percentage never resolves circularly against picture's own shrink-to-fit size, which
+   left the img undersized and default-inline, so it hugged the left edge instead of centering. */
+.auth-brand picture {
+    display: block;
+    width: 82%;
+    max-width: 312px;
+}
+.auth-brand img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+.auth-card {
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 26px 26px 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+}
+.auth-head {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.auth-title {
+    font-size: var(--text-h1);
+    line-height: var(--leading-tight);
+    font-weight: 700;
+    letter-spacing: var(--tracking-tight);
+    margin: 0;
+}
+.auth-sub {
+    color: var(--muted);
+    font-size: var(--text-sm);
+    margin: 0;
+}
+/* The form lives inside the card; its flex-column stretch makes fields and the button full-width. */
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.auth-card .perform {
+    text-align: center;
+}
+.auth-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.auth-skip {
+    text-align: center;
+    color: var(--muted);
+    font-size: var(--text-sm);
+}
+/* The login form's password-recovery action reuses .auth-skip's quiet look on a <button>. */
+button.auth-skip {
+    background: none;
+    border: 0;
+    cursor: pointer;
+    font-family: inherit;
+}
+button.auth-skip:hover:not(:disabled) {
+    color: var(--text);
+    text-decoration: underline;
+}
+button.auth-skip:disabled {
+    opacity: 0.55;
+    cursor: default;
+}
+.auth-foot {
+    color: var(--muted);
+    font-size: var(--text-sm);
+    margin: 0;
+    text-align: center;
+}
+.login-error {
+    color: var(--bad);
+    font-size: var(--text-sm);
+    margin: 0;
+}
+
+/* Ensemble hub (supabase mode) */
+/* Narrow the picker to match its ~480px content, so the heading, list, and create-row fill the
+   column instead of leaning against the left of a wide page. */
+.ensembles-page {
+    max-width: 520px;
+}
+.ensemble-list {
+    list-style: none;
+    padding: 0;
+    margin: 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 480px;
+}
+.ensemble-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+}
+.ensemble-list li.active {
+    border-color: var(--clay);
+}
+.create-ensemble {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 16px;
+    max-width: 480px;
+    flex-wrap: wrap;
+}
+.create-ensemble input {
+    flex: 1;
+    min-width: 180px;
+    box-sizing: border-box;
+    height: 36px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0 10px;
+    color: var(--text);
+}
+
+/* ============================================================================
+   Setlist workspace — two-column shell.
+   The set is the primary column; the reasoning (why it's thin, who to chase,
+   the arc) sits in a sticky right rail; the reserves table spans full width
+   below. Collapses to one column under 1000px. See SetlistView.
+   ========================================================================== */
+.page.setlist-page {
+    max-width: 1240px;
+}
+.setlist-workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1.9fr) minmax(300px, 1fr);
+    gap: 24px;
+    align-items: start;
+    margin-top: 4px;
+}
+.set-main {
+    min-width: 0;
+}
+.set-rail {
+    position: sticky;
+    top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+}
+/* Panels in the rail already carry their own bottom margin for the old stacked
+   layout; the flex gap owns spacing here, so zero it out. */
+.set-rail > * {
+    margin-bottom: 0 !important;
+}
+@media (max-width: 1000px) {
+    .setlist-workspace {
+        grid-template-columns: 1fr;
+    }
+    .set-rail {
+        position: static;
+    }
+}
+/* Setlist diagnosis — the shortfall levers and the chase actions used to be two saturated tint
+   cards stacked in the rail, competing with the set. Fold them into one calm surface panel with
+   two labelled sections divided by a rule, so the rail reads as a single companion, not a second
+   column of noise. The coral lever ticks and teal chase gains still carry the problem/fix coding. */
+.set-diagnosis {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+}
+.diag-block {
+    padding: 16px 18px;
+}
+.diag-block + .diag-block {
+    border-top: 1px solid var(--border-soft);
+}
+
+/* Pronounced-but-restrained module heading. Sans, ink, 16/700 — a real heading,
+   not the old 11-13px muted uppercase eyebrow. Used across the setlist modules. */
+.module-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 0 12px;
+}
+.module-head .module-title {
+    font-family: var(--font-sans);
+    font-size: var(--text-title);
+    font-weight: 700;
+    letter-spacing: var(--tracking-tight);
+    /* Reset the .callout h2 eyebrow styling when a module heading sits inside a callout. */
+    text-transform: none;
+    color: var(--text);
+    margin: 0;
+}
+.module-head .module-count {
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+}
+
+/* Chase module — one ranked, person-first list (replaces stacked ChasePanel +
+   ChaseCallList). Each person is a collapsible row: impact on the header, the
+   songs they open + a copy-ready message in the detail. See ChaseModule. */
+.chase-module .hint {
+    margin: 0 0 10px;
+}
+.chase-person {
+    border-top: 1px solid var(--teal-tint-border);
+}
+.chase-person:first-of-type {
+    border-top: none;
+}
+.chase-person-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.chase-person-head {
+    flex: 1;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: 14px 1fr auto;
+    align-items: baseline;
+    gap: 8px;
+    background: none;
+    border: none;
+    padding: 9px 0;
+    text-align: left;
+    cursor: pointer;
+    color: var(--text);
+    font-family: var(--font-sans);
+}
+.chase-caret {
+    color: var(--muted-2);
+    font-size: var(--text-micro);
+    line-height: 1;
+}
+.chase-who {
+    min-width: 0;
+    font-size: var(--text-body);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.chase-parts {
+    color: var(--muted);
+    font-size: var(--text-caption);
+}
+.chase-impact {
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+    white-space: nowrap;
+}
+.chase-impact .gain {
+    color: var(--teal-text);
+}
+.chase-detail {
+    padding: 2px 0 12px 22px;
+}
+.chase-songs {
+    list-style: none;
+    margin: 0 0 8px;
+    padding: 0;
+}
+.chase-songs li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 3px 0;
+    font-size: var(--text-sm);
+}
+.chase-song-title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.chase-songs .gain {
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    font-variant-numeric: tabular-nums;
+    color: var(--teal-text);
+    white-space: nowrap;
+}
+
+/* Not-in-the-set — one full-width module for the bench, excludes, and drops.
+   Search + reason chips over a grouped, worst-first table. See NotInSet. */
+.not-in-set {
+    margin-top: 28px;
+}
+.nis-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+.nis-search {
+    flex: 1;
+    min-width: 220px;
+    height: 36px;
+    padding: 0 12px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-ctl);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+}
+.nis-search::placeholder {
+    color: var(--muted-2);
+}
+.nis-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.nis-group {
+    margin-top: 18px;
+}
+.nis-group-head {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding-bottom: 6px;
+    margin-bottom: 2px;
+    border-bottom: 1px solid var(--border);
+}
+.nis-group-label {
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--text);
+}
+.nis-group-count {
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+}
+.nis-group-note {
+    font-size: var(--text-caption);
+    color: var(--muted);
+    margin-left: auto;
+}
+
+/* Rows share ONE column grid so title/reason/meta/action line up down the whole
+   group. Each row is a subgrid, so it keeps its own box (for the separator) while
+   inheriting the parent's tracks — without subgrid, each row sized its columns
+   independently and the reason column drifted row to row. reason/meta/action are
+   content-sized (auto), so each column is exactly as wide as its widest cell. */
+/* Six tracks: title | flex | reason | flex | meta | action. The two flex tracks
+   are equal, so the reason sits centered in the gap between title and meta (more
+   noticeable there than hugging the meta). Cells are placed explicitly so the two
+   flex tracks stay empty. */
+.nis-rows {
+    display: grid;
+    grid-template-columns: minmax(120px, auto) 1fr minmax(0, auto) 1fr auto auto;
+}
+.nis-row {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: subgrid;
+    align-items: baseline;
+    gap: 10px 14px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border-soft);
+}
+.nis-title {
+    grid-column: 1;
+}
+.nis-reason {
+    grid-column: 3;
+}
+.nis-meta {
+    grid-column: 5;
+}
+.nis-row .ctl {
+    grid-column: 6;
+}
+.nis-title {
+    font-size: var(--text-body);
+    font-weight: 600;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.nis-title:hover {
+    color: var(--accent);
+    text-decoration: underline;
+}
+.nis-reason {
+    font-size: var(--text-sm);
+    color: var(--muted);
+}
+.nis-meta {
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+    white-space: nowrap;
+    text-align: right;
+}
+.nis-row .ctl {
+    justify-self: end;
+}
+.nis-more {
+    margin-top: 8px;
+    background: none;
+    border: none;
+    padding: 4px 0;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    color: var(--accent);
+    cursor: pointer;
+}
+.nis-more:hover {
+    text-decoration: underline;
+}
+.nis-empty {
+    color: var(--muted);
+    font-size: var(--text-body);
+    padding: 12px 0;
+}
+@media (max-width: 620px) {
+    .nis-rows {
+        grid-template-columns: 1fr auto;
+    }
+    /* Drop the explicit placement so cells reflow into the two mobile columns. */
+    .nis-title,
+    .nis-reason,
+    .nis-meta,
+    .nis-row .ctl {
+        grid-column: auto;
+    }
+    .nis-meta {
+        text-align: left;
+    }
+}
+
+/* Formatted "Why it's thin": a lead summary, then the levers as a scannable list
+   rather than one prose block. See ShortfallNote. */
+.shortfall-lead {
+    margin: 0 0 10px;
+}
+.shortfall-levers {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.shortfall-levers li {
+    position: relative;
+    padding: 5px 0 5px 16px;
+    font-size: var(--text-sm);
+    border-top: 1px solid var(--clay-tint-border);
+}
+.shortfall-levers li:first-child {
+    border-top: none;
+}
+/* A quiet clay tick marks each lever without the AI-tell of a heavy bullet. */
+.shortfall-levers li::before {
+    content: "";
+    position: absolute;
+    left: 2px;
+    top: 12px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--clay);
+}
+
+/* Set arc promoted to a full-width band under the timing bar; give it room before
+   the workspace grid. */
+.setlist-page > .arc {
+    margin-bottom: 20px;
+}
+
+/* Read-only NotInSet (the draft preview): same grouped table, no action column.
+   Override the parent track list (the rows are subgrid, so they inherit it). */
+.not-in-set.readonly .nis-rows {
+    grid-template-columns: minmax(120px, auto) 1fr minmax(0, auto) 1fr auto;
+}
+@media (max-width: 620px) {
+    .not-in-set.readonly .nis-rows {
+        grid-template-columns: 1fr auto;
+    }
+}
+
+/* Skeleton loaders --------------------------------------------------------
+   Shown via each route's loading.tsx while its server component resolves its DB reads. The nav
+   paints instantly and the page body shows a shimmer shaped like the real content, so the wait is
+   legible (no blank screen) and the swap to real content causes little layout shift. Theme-aware
+   through --surface-2 / --border-soft, which both flip in dark mode. */
+@keyframes skeleton-sheen {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+.skeleton {
+    border-radius: var(--radius-ctl);
+    background-color: var(--surface-2);
+    background-image: linear-gradient(
+        90deg,
+        transparent 20%,
+        var(--border-soft) 50%,
+        transparent 80%
+    );
+    background-size: 200% 100%;
+    background-repeat: no-repeat;
+    animation: skeleton-sheen 1.5s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+    .skeleton {
+        animation: none;
+    }
+}
+/* An accessible wrapper: the whole skeleton page announces "Loading" once, and its shimmer blocks
+   are hidden from assistive tech (they carry no meaning). */
+.skeleton-page [aria-hidden] {
+    pointer-events: none;
+}
+.skeleton-rows {
+    display: flex;
+    flex-direction: column;
+}
+.skeleton-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 15px 16px;
+    border-bottom: 1px solid var(--border-soft);
+}
+.skeleton-row:last-child {
+    border-bottom: none;
+}
+/* Match the stat-card / panel grids so the swap to real content barely shifts. */
+.skeleton-cards {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(3, 1fr);
+    margin: 22px 0;
+}
+@media (max-width: 720px) {
+    .skeleton-cards {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================================================
+   The motion layer: light, reduced-motion-gated transitions and keyframes on top
+   of the card hover-lift and route-fade above. They live at the file foot so the
+   consolidated reduced-motion block at the very end wins on source order. Add any
+   future keyframe or transform rule ABOVE that final block, never below.
+   ============================================================================ */
+
+/* Ease the hovers that used to snap. Color, background, and border only, so none
+   of these needs a reduced-motion guard (that gate is for motion, not color
+   fades). None of these selectors carried a transition before, so this is their
+   only one. Never add these to .stat-card / .card / .filter-chip /
+   .row-menu-trigger: those already declare a transition, and a second one would
+   replace it and wipe the hover-lift. */
+
+/* Quiet text links and section actions that tint on hover: color only. */
+.section-action,
+.hero-avail-action,
+.cell-title a,
+.stat-action,
+.panel-action,
+.need-action,
+.roster-name a,
+.nav .nav-links a,
+.nav .nav-me a,
+.nav .nav-right .nav-section,
+a.rep-title,
+.whoscoming-toggle,
+.behind-title,
+.behind-gig,
+a.song-name,
+button.auth-skip,
+.nis-title {
+    transition: color 0.12s ease;
+}
+
+/* Rows and ghost items that wash in a surface tint on hover: background only.
+   Transitions do not inherit, so easing a row never animates its children. */
+.nav-toggle,
+.nav-avatar,
+.account-item,
+.roster-row,
+.set-row,
+.pg-lib-row,
+.row-menu-item {
+    transition: background 0.12s ease;
+}
+
+/* Outline buttons that firm up their border and ink on hover. */
+.seam-add-break,
+.move-btn,
+.suggest-add {
+    transition:
+        border-color 0.12s ease,
+        color 0.12s ease;
+}
+
+/* Card and input borders that shift color on hover or focus. Border width is
+   constant, so nothing reflows. */
+.nextup,
+.pg-name {
+    transition: border-color 0.12s ease;
+}
+
+/* Destructive icon button: reddens its ink and picks up a tint on hover. */
+.cover-remove {
+    transition:
+        color 0.12s ease,
+        background 0.12s ease;
+}
+
+/* Tabs: color on hover, plus the active underline color so it eases in on select.
+   The underline is a 2px transparent border at rest, so only its color moves. */
+.tab {
+    transition:
+        color 0.12s ease,
+        border-bottom-color 0.12s ease;
+}
+
+/* .perform, .ctl, and .pagination-btn are both hover targets and press targets.
+   A selector carries only one transition declaration, so each lists its hover
+   properties and the 90ms press transform together. Splitting them into two
+   declarations would drop the earlier one. */
+.perform {
+    transition:
+        background 0.12s ease,
+        transform 90ms ease;
+}
+.ctl {
+    transition:
+        background 0.12s ease,
+        color 0.12s ease,
+        border-color 0.12s ease,
+        transform 90ms ease;
+}
+.pagination-btn {
+    transition:
+        border-color 0.12s ease,
+        transform 90ms ease;
+}
+
+/* The RSVP on-state slides into its tone instead of snapping. The 140ms color
+   fill rides with the 90ms press transform so the press is not dropped.
+   .whatif-toggle is also a .ctl, so it sits after .ctl here to win the shared
+   transition. */
+.rsvp-btn {
+    transition:
+        background-color 140ms ease,
+        border-color 140ms ease,
+        color 140ms ease,
+        transform 90ms ease;
+}
+.whatif-toggle {
+    transition:
+        background-color 140ms ease,
+        border-color 140ms ease,
+        color 140ms ease,
+        transform 90ms ease;
+}
+
+/* A 1px depress on the control buttons on press. :not(:disabled) keeps dead
+   buttons flat. This rule follows all four base rules so it wins on source order. */
+.perform:active:not(:disabled),
+.ctl:active:not(:disabled),
+.rsvp-btn:active:not(:disabled),
+.pagination-btn:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+/* Inline status and error messages fade up 4px as they mount. Every
+   transient target renders under a {cond && ...} guard, so the element is fresh on
+   appearance and the keyframe fires as a message arrives. Permanent .status banners
+   that render on load (the performed-set read-only notice, the claimed-invite
+   confirmation) carry .status-static and are excluded, so a static banner does not
+   fade on every page load. `both` sets the from-state before the first frame to
+   kill the flash; the to-state is identity, so nothing lingers. */
+@keyframes msg-enter {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.status:not(.status-static),
+.row-error,
+.mypart-error {
+    animation: msg-enter 160ms ease both;
+}
+
+/* The account and row menus open with a short fade and 6px drop from their anchor
+   edge. Both mount on open, so the keyframe fires. Neither is an ancestor of a
+   hover-lift card (Nav and the page are layout siblings), so the transient layer
+   during the run cannot suppress the card lift. */
+@keyframes menu-pop {
+    from {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+.account-menu {
+    animation: menu-pop 140ms ease both;
+    transform-origin: top right;
+}
+.row-menu-pop {
+    animation: menu-pop 140ms ease both;
+    transform-origin: top;
+}
+
+/* .nav-mid.open swaps display none to flex, which cannot transition,
+   so drop it in with a keyframe. Scoped to .open so it never fires on first paint,
+   and to the phone block where the menu is the only place display flips. */
+@keyframes nav-drop {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+@media (max-width: 640px) {
+    .nav-mid.open {
+        animation: nav-drop 160ms ease both;
+    }
+}
+
+/* Disclosures grow open instead of hard-swapping. The panel is now
+   always in the DOM (toggled by .open) so grid-template-rows 0fr to 1fr has
+   something to animate. The animating grid child is a bare .reveal-inner wrapper
+   with min-height:0 and overflow:hidden, so it collapses all the way to zero and
+   clips the panel inside it, including that panel's own padding, border, and
+   margin. Clipping through the wrapper matters: a padded panel used as the grid
+   child directly cannot shrink past its own padding and border, so it would hold
+   the row open a couple dozen pixels even when closed. visibility:hidden while
+   collapsed drops the panel, and any focusable control inside it, from the tab
+   order and the accessibility tree. No transform sits on the wrapper, so this
+   does not promote a layer or fight the card hover-lift. */
+.reveal {
+    display: grid;
+    grid-template-rows: 0fr;
+    overflow: hidden;
+    visibility: hidden;
+    transition:
+        grid-template-rows 180ms ease,
+        visibility 180ms ease;
+}
+.reveal.open {
+    grid-template-rows: 1fr;
+    visibility: visible;
+}
+.reveal-inner {
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* One caret glyph, rotated a quarter turn on open, replaces the two-glyph swap.
+   Keyed off each trigger's aria-expanded, which all three carry. The carets are
+   flex or grid items already, so the rotate needs no display change. */
+.mypart-caret,
+.chase-caret {
+    transition: transform 180ms ease;
+}
+.mypart-disclosure[aria-expanded="true"] .mypart-caret,
+.whoscoming-toggle[aria-expanded="true"] .mypart-caret,
+.chase-person-head[aria-expanded="true"] .chase-caret {
+    transform: rotate(90deg);
+}
+
+/* On render, the set arc lays itself out. Each bar grows up from the
+   baseline, lightly staggered left to right by index, so the eye sweeps the energy
+   shape once. The bar's own height (set inline by intensity) is the natural end of
+   the grow, so the keyframe needs only a from-state; animation-delay is set inline
+   per bar, capped so a long set does not drag the sweep out. Height, not scaleY, so
+   the rounded top corner never distorts. The bars are leaves, never ancestors of a
+   card, so this promotes no layer. The timing bar in the same view is left static on
+   purpose: two growing bars in one view compound. */
+@keyframes arc-grow {
+    from {
+        height: 0;
+        min-height: 0;
+    }
+}
+.arc-bar {
+    animation-name: arc-grow;
+    animation-duration: 250ms;
+    animation-timing-function: ease;
+    animation-fill-mode: backwards;
+}
+
+/* The dashboard readiness bar measures itself out from the left on load, drawing
+   the eye to the one book-health figure on the page. scaleX keeps the segment
+   proportions and needs no width value in the keyframe; transform-origin left
+   grows it rightward. The bar is a leaf inside its stat card, never an ancestor of
+   an interactive card, so this is layer-safe, and it is the only growing bar on the
+   dashboard, so nothing compounds. The timing bar (on the draft surfaces, beside
+   the arc) is deliberately left alone so two growing bars never share a view. */
+@keyframes bar-grow {
+    from {
+        transform: scaleX(0);
+    }
+}
+.readiness-bar {
+    transform-origin: left;
+    animation: bar-grow 340ms ease backwards;
+}
+
+/* Consolidated reduced-motion guard for the motion layer. This must stay the LAST
+   motion block in the file: its neutralizers are plain animation/transform/
+   transition none at each rule's own specificity, so they win only by source
+   order. The color and opacity eases above are left running on purpose: removing a
+   color fade helps no one. */
+@media (prefers-reduced-motion: reduce) {
+    /* Status and error messages appear at once, no rise. */
+    .status,
+    .row-error,
+    .mypart-error {
+        animation: none;
+    }
+    /* Menus and the mobile nav appear with no entrance move. */
+    .account-menu,
+    .row-menu-pop,
+    .nav-mid.open {
+        animation: none;
+    }
+    /* No depress on press. */
+    .perform:active:not(:disabled),
+    .ctl:active:not(:disabled),
+    .rsvp-btn:active:not(:disabled),
+    .pagination-btn:active:not(:disabled) {
+        transform: none;
+    }
+    /* Disclosures and carets change state instantly. */
+    .reveal {
+        transition: none;
+    }
+    .mypart-caret,
+    .chase-caret {
+        transition: none;
+    }
+    /* Bars appear at full size, no draw-in. */
+    .arc-bar,
+    .readiness-bar {
+        animation: none;
+    }
+}
+
+/* Event-detail sections. Each is a collapsible card, all collapsed on load, so the page reads
+   as a short stack of titled cards instead of one long scroll. The header carries a chevron,
+   the label, an at-a-glance hint (so state is legible while collapsed), and an optional
+   secondary link. The body hides with [hidden] but stays mounted, so an in-progress edit
+   survives a collapse. Surfaces are token-based, so both themes flip for free. */
+.section-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 24px;
+    max-width: 720px;
+}
+.section-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+}
+.section-card-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 14px 4px 4px;
+}
+.section-toggle {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 10px;
+    background: none;
+    border: 0;
+    border-radius: var(--radius-ctl);
+    text-align: left;
+    color: var(--text);
+    cursor: pointer;
+}
+.section-toggle:hover {
+    background: var(--surface-2);
+}
+.section-chevron {
+    flex-shrink: 0;
+    color: var(--faint);
+    font-size: var(--text-caption);
+    transition: transform 0.15s ease;
+}
+.section-card.open .section-chevron {
+    transform: rotate(90deg);
+}
+.section-card-label {
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-eyebrow);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--muted);
+}
+.section-hint {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--text-caption);
+    color: var(--faint);
+}
+.section-card-action {
+    flex-shrink: 0;
+}
+.section-card-body {
+    padding: 6px 18px 20px;
+    border-top: 1px solid var(--border-soft);
+}
+.section-card-body[hidden] {
+    display: none;
+}
+
+/* "Add from the book" picker: the whole book in one filterable, paginated list with an Add per
+   row, replacing the old add-a-song dropdown. Reuses the repertoire toolbar
+   (.songs-toolbar / .songs-select / .filter-chip / .songs-count). */
+.agenda-pick,
+.prep-pick {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border-top: 1px solid var(--border-soft);
+    padding-top: 16px;
+}
+.picker-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.picker-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 2px;
+    border-top: 1px solid var(--divider);
+}
+.picker-row:first-child {
+    border-top: 0;
+}
+.picker-main {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 5px 10px;
+}
+.picker-title {
+    font-size: var(--text-body);
+    font-weight: 500;
+    color: var(--text);
+}
+.picker-badges {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px;
+}
+.picker-row .song-status {
+    flex-shrink: 0;
+}
+.picker-last {
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-caption);
+    color: var(--faint);
+    white-space: nowrap;
+}
+.picker-add {
+    flex-shrink: 0;
+}
+.picker-empty {
+    padding: 18px 2px;
+    color: var(--muted);
+    font-size: var(--text-sm);
+}
+@media (max-width: 560px) {
+    .picker-row {
+        flex-wrap: wrap;
+    }
+    .picker-last {
+        order: 3;
+    }
+}
+
+/* Visually hidden but available to assistive tech (aria-live status announcements, etc.). */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
