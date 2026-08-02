@@ -4,50 +4,15 @@
 // stack up (`npx supabase start`) and Docker; the runner resets the DB per domain.
 
 import { execSync } from "node:child_process";
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { createSupabaseRepository } from "../../lib/supabase/repository";
 import type { Repository } from "../../lib/repository";
+import { resetDb, supaEnv } from "../support/stack";
 
-// apps/web/test/integration -> repo root
-const repoRoot = join(
-    dirname(fileURLToPath(import.meta.url)),
-    "..",
-    "..",
-    "..",
-    "..",
-);
-
-let cachedEnv: {
-    url: string;
-    anon: string;
-    service: string;
-    dbUrl: string;
-} | null = null;
-export function supaEnv(): {
-    url: string;
-    anon: string;
-    service: string;
-    dbUrl: string;
-} {
-    if (cachedEnv) return cachedEnv;
-    const out = execSync("npx supabase status -o env", {
-        cwd: repoRoot,
-        encoding: "utf8",
-    });
-    const url = /API_URL="?([^"\n]+)/.exec(out)?.[1];
-    const anon = /ANON_KEY="?([^"\n]+)/.exec(out)?.[1];
-    const service = /SERVICE_ROLE_KEY="?([^"\n]+)/.exec(out)?.[1];
-    const dbUrl = /DB_URL="?([^"\n]+)/.exec(out)?.[1];
-    if (!url || !anon || !service || !dbUrl)
-        throw new Error(
-            "`supabase status` returned no API_URL/ANON_KEY/SERVICE_ROLE_KEY/DB_URL — is the local stack up?",
-        );
-    cachedEnv = { url, anon, service, dbUrl };
-    return cachedEnv;
-}
+// Stack access and the data reset live in test/support/stack.ts so the e2e global setup can share
+// them without importing the repository layer. Re-exported here because every integration domain
+// already reaches for them through this module.
+export { resetDb, supaEnv };
 
 /**
  * Confirm a freshly signed-up account's email via the admin API. Email confirmation is ON (so the
@@ -63,36 +28,6 @@ export async function confirmUser(email: string): Promise<void> {
     const user = data.users.find((u) => u.email === email);
     if (user && !user.email_confirmed_at) {
         await admin.auth.admin.updateUserById(user.id, { email_confirm: true });
-    }
-}
-
-/**
- * Clean slate per domain, WITHOUT `supabase db reset`. A full reset drops/recreates the database,
- * which severs GoTrue's connection and 502s the gateway for minutes on a loaded CI runner (the old
- * flaky failures). Instead we reset the DATA over the live connection — truncate every table + reload
- * the seed (see supabase/test-reset.sql) — so GoTrue is never disturbed. Schema is unchanged between
- * domains, so re-applying migrations (what `db reset` also does) isn't needed here; the CI job's
- * `supabase start` applies them once at the top.
- */
-export function resetDb(): void {
-    const { dbUrl } = supaEnv();
-    // Concatenate test-reset.sql (set jwt_secret + truncate) and seed.sql and pipe the whole thing
-    // to psql over stdin — one session (so the guard passes), no \i/\ir include or cwd-relative path
-    // to get wrong. Capture stderr so any SQL error surfaces in the CI log instead of a bare
-    // "Command failed".
-    const sql = `${readFileSync(join(repoRoot, "supabase", "test-reset.sql"), "utf8")}
-${readFileSync(join(repoRoot, "supabase", "seed.sql"), "utf8")}`;
-    try {
-        execSync(`psql "${dbUrl}" -v ON_ERROR_STOP=1 -q`, {
-            input: sql,
-            stdio: ["pipe", "ignore", "pipe"],
-            encoding: "utf8",
-        });
-    } catch (e) {
-        const err = e as { stderr?: string };
-        throw new Error(
-            `data reset (psql) failed: ${(err.stderr || "").trim() || (e as Error).message}`,
-        );
     }
 }
 
