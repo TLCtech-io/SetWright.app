@@ -59,7 +59,7 @@ jobs:
                   # Sec 6: fail fast if automation would push the local-only auth rate limits to prod, or if the
                   # config.toml LOCAL-ONLY marker was dropped. See scripts/check-config-safety.sh.
             - run: bash scripts/check-config-safety.sh
-            - uses: actions/setup-node@v6
+            - uses: actions/setup-node@v7
               with:
                   node-version: 22
                   cache: npm
@@ -78,7 +78,7 @@ jobs:
         timeout-minutes: 25
         steps:
             - uses: actions/checkout@v7
-            - uses: actions/setup-node@v6
+            - uses: actions/setup-node@v7
               with:
                   node-version: 22
                   cache: npm
@@ -87,7 +87,7 @@ jobs:
             # This SHA is the v2.1.1 release. The trailing comment names that tag rather than the
             # branch, so Dependabot has a real version to resolve against when it raises the bump.
             # Two coordinates move together on an upgrade: this SHA and the version below.
-            - uses: supabase/setup-cli@3c2f5e2ae34c34e428e8e206e2c4d21fa2d20fbf # v2.1.1
+            - uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v3.0.0
               with:
                   version: 2.109.1 # pinned to the dev devDependency's resolved version (package.json supabase ^2.108.0); bump together
             - run: npm ci
@@ -102,7 +102,7 @@ jobs:
         timeout-minutes: 25
         steps:
             - uses: actions/checkout@v7
-            - uses: actions/setup-node@v6
+            - uses: actions/setup-node@v7
               with:
                   node-version: 22
                   cache: npm
@@ -111,7 +111,7 @@ jobs:
             # This SHA is the v2.1.1 release. The trailing comment names that tag rather than the
             # branch, so Dependabot has a real version to resolve against when it raises the bump.
             # Two coordinates move together on an upgrade: this SHA and the version below.
-            - uses: supabase/setup-cli@3c2f5e2ae34c34e428e8e206e2c4d21fa2d20fbf # v2.1.1
+            - uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v3.0.0
               with:
                   version: 2.109.1 # pinned to the dev devDependency's resolved version (package.json supabase ^2.108.0); bump together
             - run: npm ci
