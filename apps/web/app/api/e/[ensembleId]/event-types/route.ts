@@ -5,6 +5,7 @@
 
 import { NextResponse } from "next/server";
 import { coerceEventTypeInput } from "@/lib/eventTypeInput";
+import { coerceReorderInput } from "@/lib/reorderInput";
 import { repoForRoute } from "@/lib/apiEnsemble";
 
 export async function POST(
@@ -37,17 +38,10 @@ export async function PATCH(
     const { ensembleId } = await params;
     const repo = await repoForRoute(ensembleId, { requireDirector: true });
     if (repo instanceof NextResponse) return repo;
-    const body = await req.json().catch(() => null);
-    const order =
-        body && typeof body === "object"
-            ? (body as { order?: unknown }).order
-            : undefined;
-    if (!Array.isArray(order) || !order.every((x) => typeof x === "string")) {
-        return NextResponse.json(
-            { error: "order must be an array of ids" },
-            { status: 400 },
-        );
-    }
-    await repo.reorderEventTypes(order as string[]);
+    const raw = await req.json().catch(() => null);
+    const parsed = coerceReorderInput(raw);
+    if (!parsed.ok)
+        return NextResponse.json({ error: parsed.error }, { status: 400 });
+    await repo.reorderEventTypes(parsed.value);
     return NextResponse.json({ ok: true });
 }
