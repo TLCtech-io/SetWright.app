@@ -1,0 +1,17 @@
+{
+    "name": "@repertoire/db",
+    "version": "0.1.0",
+    "description": "The SQL parse-validation harness over supabase/migrations/. Holds no SQL itself.",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "typecheck": "tsc --noEmit -p tsconfig.json",
+        "test": "tsx test/validate.ts && tsx test/authEmail.test.ts"
+    },
+    "devDependencies": {
+        "@types/node": "^20.14.0",
+        "pg-query-emscripten": "^5.1.0",
+        "tsx": "^4.16.0",
+        "typescript": "^5.5.0"
+    }
+}

@@ -1,0 +1,22 @@
+{
+    "name": "@repertoire/core",
+    "version": "0.1.0",
+    "description": "Domain model and the set drafter. Pure logic, no storage or transport. Workspace-internal: the entry points are TypeScript source, resolved by Next and tsx only (see CLAUDE.md).",
+    "private": true,
+    "type": "module",
+    "main": "./src/index.ts",
+    "types": "./src/index.ts",
+    "exports": {
+        ".": "./src/index.ts"
+    },
+    "scripts": {
+        "build": "tsc -p tsconfig.json",
+        "typecheck": "tsc --noEmit -p tsconfig.json",
+        "test": "tsx test/drafter.test.ts && tsx test/prefer.test.ts && tsx test/sequence.test.ts && tsx test/chase.test.ts && tsx test/pitch.test.ts && tsx test/casting.test.ts"
+    },
+    "devDependencies": {
+        "@types/node": "^20.14.0",
+        "tsx": "^4.16.0",
+        "typescript": "^5.5.0"
+    }
+}
