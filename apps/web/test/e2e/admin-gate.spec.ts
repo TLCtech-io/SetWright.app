@@ -17,6 +17,22 @@ async function signIn(page: Page, email: string): Promise<void> {
 
 const PROBE = "/api/admin/__gate_probe__"; // no such route exists; the gate's decision is what differs
 
+// The probe goes through the page's own fetch rather than page.request. Playwright's
+// APIRequestContext is a Node-side HTTP client that applies a cookie's Secure attribute by
+// scheme alone, with no carve-out for loopback, so it drops the session cookie on the plain-http
+// e2e server. The proxy would then answer its unauthenticated 401 and the gate's own decision
+// would never be reached. Chromium treats 127.0.0.1 as a potentially trustworthy origin and does
+// attach the cookie, so the browser's fetch exercises the gate the way a real client meets it.
+//
+// redirect: "manual" stands in for maxRedirects: 0. A redirect surfaces as status 0 here, which
+// fails the assertion rather than passing quietly.
+async function probeStatus(page: Page): Promise<number> {
+    return page.evaluate(async (url) => {
+        const res = await fetch(url, { redirect: "manual" });
+        return res.status;
+    }, PROBE);
+}
+
 test("a non-admin is redirected away from an /admin page", async ({ page }) => {
     await signIn(page, "ben@example.com"); // ben is a plain member, never a platform admin
     await page.goto("/admin/directors");
@@ -26,16 +42,14 @@ test("a non-admin is redirected away from an /admin page", async ({ page }) => {
 
 test("a non-admin gets a 403 on the admin API", async ({ page }) => {
     await signIn(page, "ben@example.com");
-    const res = await page.request.get(PROBE, { maxRedirects: 0 });
-    expect(res.status()).toBe(403);
+    expect(await probeStatus(page)).toBe(403);
 });
 
 test("a platform admin passes the gate (meets the route, not a 403)", async ({
     page,
 }) => {
     await signIn(page, "sam@example.com"); // sam is flagged is_platform_admin in the seed
-    const res = await page.request.get(PROBE, { maxRedirects: 0 });
-    // Not denied by the gate. No such route exists yet, so routing itself answers 404 — proof the gate
-    // let the admin through rather than short-circuiting with a 403.
-    expect(res.status()).toBe(404);
+    // Not denied by the gate. No such route exists yet, so routing itself answers 404, which is the
+    // proof the gate let the admin through rather than short-circuiting with a 403.
+    expect(await probeStatus(page)).toBe(404);
 });
