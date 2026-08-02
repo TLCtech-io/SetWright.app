@@ -1,1 +1,32 @@
+node_modules/
+dist/
+*.log
 .DS_Store
+.vercel/
+
+# Claude Code. Share the hooks and the settings that wire them, since they enforce
+# project rules (the locked base migrations, the core suite). Keep personal
+# settings and the local launch config out.
+.claude/*
+!.claude/settings.json
+!.claude/hooks/
+
+# Local env files hold real secrets, never commit. Cover EVERY variant (.env, .env.local,
+# .env.production, …) and re-allow the committed template.
+.env
+.env.*
+!.env.example
+
+# Certificates and private keys. Never commit.
+*.pem
+*.key
+*.p12
+*.crt
+
+# Playwright E2E artifacts
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+.vscode/

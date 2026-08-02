@@ -1,0 +1,22 @@
+{
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "noEmit": true,
+        // The shared email module and the scripts that drive it import each other with explicit
+        // .ts specifiers, because that is what Deno resolves and a NodeNext .js specifier would
+        // not work there. Legal only because noEmit is on.
+        "allowImportingTsExtensions": true
+    },
+    // db is already the harness that validates what lives in supabase/, so it picks up the
+    // generated email surface too. Without this the shared module and its build and check
+    // scripts sit in no workspace's tsconfig and nothing typechecks them. The edge function
+    // itself stays out: it carries npm: specifiers and Deno.serve.
+    "include": [
+        "test",
+        // .mts, not .ts: the nearest package.json to scripts/ is the root one, which declares no
+        // "type", so NodeNext would read a plain .ts there as CommonJS and reject its imports.
+        // The extension says ESM outright, matching how check-test-registration.mjs already does it.
+        "../../scripts/*.mts",
+        "../../supabase/functions/_shared/**/*.ts"
+    ]
+}

@@ -1,0 +1,36 @@
+{
+    "name": "repertoire",
+    "private": true,
+    "version": "0.1.0",
+    "description": "Living repertoire system that drafts set lists.",
+    "scripts": {
+        "dev": "DATA_SOURCE=mock npm run dev --workspace apps/web",
+        "typecheck": "npm run typecheck --workspaces --if-present",
+        "build": "npm run build --workspace apps/web",
+        "test": "npm test --workspaces --if-present",
+        "test:integration": "npm run test:integration --workspace apps/web",
+        "test:e2e": "npm run test:e2e --workspace apps/web",
+        "email:build": "tsx scripts/build-email-templates.mts",
+        "email:check": "tsx scripts/check-email-templates.mts",
+        "verify": "npm run typecheck && npm run email:check && npm run build && npm test",
+        "verify:full": "npm run verify && npm run test:integration"
+    },
+    "workspaces": [
+        "packages/*",
+        "apps/*"
+    ],
+    "overrides": {
+        "postcss": "^8.5.18"
+    },
+    "devDependencies": {
+        "supabase": "^2.108.0"
+    },
+    "allowScripts": {
+        "esbuild@0.28.1": true,
+        "fsevents@2.3.3": true,
+        "fsevents@2.3.2": true
+    },
+    "dependencies": {
+        "next": "^16.2.12"
+    }
+}

@@ -1,0 +1,31 @@
+{
+    "name": "@repertoire/web",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "next dev --webpack",
+        "build": "next build --webpack",
+        "start": "next start",
+        "typecheck": "tsc --noEmit -p tsconfig.json",
+        "test": "tsx test/unit/csrf.test.ts && tsx test/unit/limits.test.ts && tsx test/unit/coercers.test.ts && tsx test/unit/format.test.ts && tsx test/unit/agenda.test.ts && tsx test/unit/prep.test.ts && tsx test/unit/attendanceGroups.test.ts && tsx test/unit/publicId.test.ts && tsx test/unit/ensemblePath.test.ts && tsx test/unit/adminPath.test.ts && tsx test/unit/sheetOrder.test.ts && tsx test/unit/resolvePublicId.mock.test.ts && tsx test/unit/pickerRows.test.ts && tsx test/unit/chaseMessage.test.ts && tsx test/unit/safeNext.test.ts && tsx test/unit/paging.test.ts && tsx test/unit/rsvpVersion.mock.test.ts && tsx test/unit/performOrder.test.ts && tsx test/unit/confirmDest.test.ts && tsx test/unit/confirmSeed.test.ts && tsx test/unit/welcomeDest.test.ts && tsx test/unit/memberInviteClear.mock.test.ts && tsx test/unit/publishedRefresh.mock.test.ts",
+        "test:integration": "tsx test/integration/run.ts",
+        "test:e2e": "playwright test"
+    },
+    "dependencies": {
+        "@repertoire/api": "*",
+        "@repertoire/core": "*",
+        "@supabase/ssr": "^0.12.4",
+        "@supabase/supabase-js": "^2.108.2",
+        "next": "^16.2.12",
+        "react": "^19.2.8",
+        "react-dom": "^19.2.8"
+    },
+    "devDependencies": {
+        "@playwright/test": "^1.62.0",
+        "@types/node": "^26.1.2",
+        "@types/react": "^19.2.17",
+        "@types/react-dom": "^19.0.0",
+        "typescript": "^7.0.2"
+    }
+}

@@ -1,0 +1,122 @@
+name: CI
+
+on:
+    push:
+        branches: ["**"] # every branch, so a plain commit/push runs CI (not just the protected ones). Tags excluded.
+    pull_request:
+
+# Branch process: feature branches -> prod-staging -> main. prod-staging is the integration branch and
+# the default PR target; main is production and is only reached by promoting prod-staging.
+#
+# A push to a branch that has an open PR fires BOTH push and pull_request for the same commit. Group
+# those two runs by branch (push exposes the branch as ref_name, a PR as head_ref) and cancel the
+# superseded one, so a PR'd branch runs the suite once per commit, not twice. Both protected branches
+# are exempt, so every merge into prod-staging and every promotion to main completes for the record
+# rather than being cancelled by the next. Feature branches stay cancellable, since only the tip matters.
+concurrency:
+    group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+    cancel-in-progress: ${{ github.ref_name != 'main' && github.ref_name != 'prod-staging' }}
+
+# Least privilege: these jobs only read the repo (no PR comments, releases, or pushes), so drop the
+# default token down to read-only (Codex security #7). A job that ever needs to write must opt back
+# in explicitly.
+permissions:
+    contents: read
+
+jobs:
+    # main only accepts promotions from prod-staging. Feature work reaches production by merging to
+    # prod-staging first, so whatever lands on main has already had the full suite run against that exact
+    # tree, lockfile included. Without this, a feature branch can PR straight to main and skip the
+    # integration tier entirely.
+    #
+    # The job runs on every event and the check is conditional inside it, rather than skipping the whole
+    # job with a job-level `if`. That keeps the status name reporting a real result on every PR, which is
+    # what a required status check in branch protection needs. The cost is a few seconds of runner time.
+    #
+    # head_ref goes through env instead of straight into the shell. A branch name is attacker-controlled
+    # on a fork PR, so interpolating it into a run block is a script injection.
+    promotion-guard:
+        name: promotion guard (main <- prod-staging)
+        runs-on: ubuntu-latest
+        steps:
+            - name: Require prod-staging as the source branch
+              if: github.event_name == 'pull_request' && github.base_ref == 'main'
+              env:
+                  HEAD_REF: ${{ github.head_ref }}
+              run: |
+                  if [ "$HEAD_REF" != "prod-staging" ]; then
+                      echo "::error::main only accepts merges from prod-staging. This PR is from '$HEAD_REF'. Merge to prod-staging first, then promote."
+                      exit 1
+                  fi
+                  echo "Promotion source is prod-staging."
+
+    verify:
+        name: typecheck · build · unit tests
+        runs-on: ubuntu-latest
+        steps:
+            - uses:
+                  actions/checkout@v7
+                  # Sec 6: fail fast if automation would push the local-only auth rate limits to prod, or if the
+                  # config.toml LOCAL-ONLY marker was dropped. See scripts/check-config-safety.sh.
+            - run: bash scripts/check-config-safety.sh
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: 22
+                  cache: npm
+            # Every workspace `test` script is a hand-written chain of tsx calls, not a glob, so a new
+            # test file runs nowhere until it is appended. Without this, verify goes green over coverage
+            # that never executed. Needs node but not the dependencies, so it runs before npm ci.
+            - run: node scripts/check-test-registration.mjs
+            - run: npm ci
+            - run: npm run verify
+
+    # The integration + e2e suites need the local Supabase stack (Docker) + a browser, so they run as
+    # separate stack-backed jobs (the runner has Docker). Each starts the CLI, runs the suite, stops.
+    integration:
+        name: integration (supabase stack)
+        runs-on: ubuntu-latest
+        timeout-minutes: 25
+        steps:
+            - uses: actions/checkout@v7
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: 22
+                  cache: npm
+            # Pinned to a commit, not to a floating ref. v2 on this repo is a branch with no matching
+            # tag, so it moves on every push and would change what runs in a job holding GITHUB_TOKEN.
+            # This SHA is the v2.1.1 release. The trailing comment names that tag rather than the
+            # branch, so Dependabot has a real version to resolve against when it raises the bump.
+            # Two coordinates move together on an upgrade: this SHA and the version below.
+            - uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v3.0.0
+              with:
+                  version: 2.109.1 # pinned to the dev devDependency's resolved version (package.json supabase ^2.108.0); bump together
+            - run: npm ci
+            - run: supabase start
+            - run: npm run test:integration
+            - if: always()
+              run: supabase stop
+
+    e2e:
+        name: e2e (playwright)
+        runs-on: ubuntu-latest
+        timeout-minutes: 25
+        steps:
+            - uses: actions/checkout@v7
+            - uses: actions/setup-node@v7
+              with:
+                  node-version: 22
+                  cache: npm
+            # Pinned to a commit, not to a floating ref. v2 on this repo is a branch with no matching
+            # tag, so it moves on every push and would change what runs in a job holding GITHUB_TOKEN.
+            # This SHA is the v2.1.1 release. The trailing comment names that tag rather than the
+            # branch, so Dependabot has a real version to resolve against when it raises the bump.
+            # Two coordinates move together on an upgrade: this SHA and the version below.
+            - uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v3.0.0
+              with:
+                  version: 2.109.1 # pinned to the dev devDependency's resolved version (package.json supabase ^2.108.0); bump together
+            - run: npm ci
+            - run: npx playwright install --with-deps chromium
+            - run: supabase start
+            - run: npm run test:e2e
+            - if: always()
+              run: supabase stop
