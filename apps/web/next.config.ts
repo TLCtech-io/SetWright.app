@@ -24,7 +24,16 @@ const nextConfig: NextConfig = {
       {
         source: '/:path*',
         headers: [
-          { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
+          // Two years, deliberately longer than the 400-day session cookie @supabase/ssr
+          // issues and refuses to shorten. What keeps that token off plaintext is its Secure
+          // attribute (lib/cookies.ts), not this header. The pin's own job is the navigation:
+          // a request to the site cannot be stripped to http before the redirect lands, and
+          // that protection has to outlive the credential the session carries.
+          //
+          // No `preload` token. Submitting a domain to the preload list takes months to
+          // reverse, applies to every subdomain forever, and there is no production hostname
+          // in this repo yet. It is a decision to make once the domain is settled.
+          { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains' },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
