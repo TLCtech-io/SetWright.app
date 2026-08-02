@@ -1,0 +1,40 @@
+version: 2
+
+# No target-branch key anywhere in this file, deliberately. Setting it would restrict this config
+# to version updates only: security update PRs ignore target-branch and always open against the
+# default branch. The default branch is already prod-staging, which is where these belong, so
+# omitting the key means one config governs both kinds of update.
+updates:
+    # npm workspaces resolve against the single root lockfile, so one entry at "/" covers
+    # apps/web and packages/* as well.
+    - package-ecosystem: npm
+      directory: "/"
+      schedule:
+          interval: weekly
+          day: monday
+      open-pull-requests-limit: 5
+      groups:
+          # Minor and patch bumps land as one PR so the suite runs once, not fifteen times.
+          # Majors stay separate: next, react and supabase-js each deserve their own read.
+          non-major:
+              update-types:
+                  - minor
+                  - patch
+      ignore:
+          # The Supabase CLI pin is duplicated in ci.yml (supabase/setup-cli version) and the two
+          # must move together. An unattended bump here would silently desync them, so take this
+          # one by hand. See the pin comment in .github/workflows/ci.yml.
+          - dependency-name: supabase
+            update-types:
+                ["version-update:semver-major", "version-update:semver-minor"]
+
+    # Action versions drift and unpinned majors are a real supply chain surface.
+    - package-ecosystem: github-actions
+      directory: "/"
+      schedule:
+          interval: weekly
+          day: monday
+      open-pull-requests-limit: 5
+      groups:
+          actions:
+              patterns: ["*"]

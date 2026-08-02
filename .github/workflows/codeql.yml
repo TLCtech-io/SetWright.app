@@ -1,0 +1,73 @@
+name: CodeQL
+
+# Advanced setup rather than default setup, for two reasons. Default setup will not run the
+# `actions` language, and it will not run a non-default query suite. Both are wanted here.
+#
+# This is a separate workflow from ci.yml on purpose. ci.yml is pinned to `contents: read`, and
+# uploading code scanning results needs `security-events: write`. Keeping them apart means the
+# suite never gains a write scope it does not use.
+on:
+    push:
+        branches: [prod-staging, main]
+    pull_request:
+    # CodeQL query packs are updated independently of this repo, so a tree that was clean last
+    # month can have a real finding today without a single commit. The weekly run catches that.
+    schedule:
+        - cron: "27 4 * * 1"
+
+# Feature branches do not push here (the push trigger names only the two protected branches), so
+# the only cancellable runs are PR re-pushes. Both protected branches complete for the record,
+# matching ci.yml.
+concurrency:
+    group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
+    cancel-in-progress: ${{ github.ref_name != 'main' && github.ref_name != 'prod-staging' }}
+
+permissions:
+    contents: read
+
+jobs:
+    analyze:
+        name: analyze (${{ matrix.language }})
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        permissions:
+            # Required to upload results as code scanning alerts.
+            security-events: write
+            # Required to fetch the CodeQL query packs.
+            packages: read
+            actions: read
+            contents: read
+
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    # javascript-typescript covers both. There is no separate typescript value.
+                    - language: javascript-typescript
+                      build-mode: none
+                    # Analyzes the workflow YAML itself for script injection through
+                    # attacker-controlled context values. ci.yml already routes head_ref through
+                    # env for exactly that reason; this keeps the next workflow honest too.
+                    - language: actions
+                      build-mode: none
+
+        steps:
+            - uses: actions/checkout@v7
+
+            - name: Initialize CodeQL
+              uses: github/codeql-action/init@v4
+              with:
+                  languages: ${{ matrix.language }}
+                  build-mode: ${{ matrix.build-mode }}
+                  # security-and-quality is the free suite that adds maintainability and
+                  # correctness queries on top of the security set. It is the no-cost half of
+                  # "quality scanning", separate from the paid GitHub Code Quality product.
+                  #
+                  # Expect a batch of quality alerts on the first run against a tree this size.
+                  # Drop to security-extended if the initial triage is not worth it.
+                  queries: security-and-quality
+
+            - name: Perform CodeQL Analysis
+              uses: github/codeql-action/analyze@v4
+              with:
+                  category: "/language:${{ matrix.language }}"

@@ -1,0 +1,34 @@
+name: Dependency review
+
+# Blocks a PR that introduces a new vulnerable or badly-licensed dependency. Free on public repos.
+#
+# Scope worth knowing: this compares the base and head manifests, so it only sees dependencies the
+# PR changes. It will not flag an advisory that already sits in package-lock.json. Dependabot is
+# what covers the existing tree.
+on:
+    pull_request:
+
+permissions:
+    contents: read
+
+jobs:
+    review:
+        name: review changed dependencies
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
+            - uses: actions/dependency-review-action@v4
+              with:
+                  fail-on-severity: high
+                  # Documented exception: sharp reaches the tree only as an optional dependency of
+                  # next, which pins ^0.34.5 and so cannot resolve the 0.35.0 fix. Nothing here
+                  # imports it. There is no next/image, no static image import, and no images
+                  # block in next.config.ts, so no build or runtime path loads it. The advisory is
+                  # CVSS 4.0 AV:L/PR:L, a local vector needing existing host access.
+                  #
+                  # Revisit the moment anyone adds next/image or a static image import. At that
+                  # point sharp becomes load-bearing and this line has to go.
+                  allow-ghsas: GHSA-f88m-g3jw-g9cj
+                  # No PR comment, so the job needs no pull-requests: write. Results are in the
+                  # job log and the checks tab. Same least-privilege line ci.yml takes.
+                  comment-summary-in-pr: never
