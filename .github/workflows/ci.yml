@@ -1,21 +1,30 @@
 name: CI
 
 on:
+    # Protected branches only. A feature branch gets its run from pull_request instead. Listing "**"
+    # here fired both events for the same commit on any branch with an open PR, and the two runs wrote
+    # check-runs under identical names, so whichever lost the concurrency race left a cancelled
+    # conclusion that a required status check reads as failure. The cost is that a feature branch with
+    # no PR open gets no run at all; open the PR as a draft to get it back.
     push:
-        branches: ["**"] # every branch, so a plain commit/push runs CI (not just the protected ones). Tags excluded.
+        branches: [prod-staging, main]
     pull_request:
 
 # Branch process: feature branches -> prod-staging -> main. prod-staging is the integration branch and
 # the default PR target; main is production and is only reached by promoting prod-staging.
 #
-# A push to a branch that has an open PR fires BOTH push and pull_request for the same commit. Group
-# those two runs by branch (push exposes the branch as ref_name, a PR as head_ref) and cancel the
-# superseded one, so a PR'd branch runs the suite once per commit, not twice. Both protected branches
-# are exempt, so every merge into prod-staging and every promotion to main completes for the record
-# rather than being cancelled by the next. Feature branches stay cancellable, since only the tip matters.
+# Narrowing the push trigger does not remove the double fire on its own. The promotion PR still fires
+# both events, because prod-staging is a push target above AND the head of that PR. So the exemption
+# has to hold on both event types, which means reading the branch the same way the group key does.
+# github.ref_name is not the branch on a pull_request event, it is "<number>/merge", so the earlier
+# form exempted push runs only and let the PR run cancel the push run out from under it.
+#
+# Net effect: both protected branches are exempt on either event, so every merge into prod-staging and
+# every promotion to main completes for the record. Feature branches stay cancellable, since only the
+# tip matters, and they now only ever have one run to cancel.
 concurrency:
     group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
-    cancel-in-progress: ${{ github.ref_name != 'main' && github.ref_name != 'prod-staging' }}
+    cancel-in-progress: ${{ (github.head_ref || github.ref_name) != 'main' && (github.head_ref || github.ref_name) != 'prod-staging' }}
 
 # Least privilege: these jobs only read the repo (no PR comments, releases, or pushes), so drop the
 # default token down to read-only (Codex security #7). A job that ever needs to write must opt back
