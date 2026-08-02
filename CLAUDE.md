@@ -38,7 +38,7 @@ SQL reduces; TypeScript decides. There are two hydration functions, both defined
 
 Queries run RLS-scoped as the signed-in member. The hydration functions are called with the user's client, never the service-role key. Tenancy is enforced at this boundary, so `core` carries no `ensemble_id` and stays tenant-agnostic.
 
-The service-role client does exist, in `apps/web/lib/supabase/admin.ts`. It is for auth-admin work only, in the invite and resend paths. It must never read or write tenant rows.
+The service-role client does exist, in `apps/web/lib/supabase/admin.ts`. It is for auth-admin work only, in the invite and resend paths. It never queries a tenant table directly, and no code may make it do so. It does have one elevated data path: the unauthenticated resend route reaches two `SECURITY DEFINER` RPCs granted to `service_role`, `refresh_pending_invite` and `consume_invite_quota_by_email`. Note where the elevation comes from. `SECURITY DEFINER` is what bypasses RLS; the key only gates who may call. Both take the target email as a scalar from the request body, so a caller does pick which row the elevated statement touches. What a caller cannot do is widen the predicate: its shape is fixed in SQL, neither accepts a filter expression, and neither returns another tenant's data. That bounds the blast radius to a single address. Add another only on those terms.
 
 ## The drafter
 
