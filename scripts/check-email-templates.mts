@@ -94,7 +94,12 @@ for (const t of GO_TEMPLATES) {
     }
     const subject = /subject = "((?:[^"\\]|\\.)*)"/.exec(body)?.[1];
     const expected = renderGoTemplate(t.kind).subject;
-    if (subject !== expected.replace(/"/g, '\\"')) {
+    // The capture above keeps TOML's escaping intact, so the expected side has to be escaped the
+    // same way before comparing. Backslashes first: escaping quotes first would then double-escape
+    // the backslashes that step just introduced. Without this a subject containing a backslash
+    // compares unequal and fails the check for no reason.
+    const escaped = expected.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+    if (subject !== escaped) {
         fail(
             `[auth.email.template.${t.configKey}] subject is ${JSON.stringify(subject)}, module renders ${JSON.stringify(expected)}. Update config.toml, and paste the same subject into the hosted dashboard.`,
         );

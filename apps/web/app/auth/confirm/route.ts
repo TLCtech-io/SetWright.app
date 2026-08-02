@@ -1,4 +1,4 @@
-// GET /auth/confirm?token_hash=...&type=invite|magiclink|recovery|email
+// GET /auth/confirm?token_hash=...&type=signup|invite|magiclink|recovery|email_change|email
 //
 // The landing route for every member-invite / sign-in email (the email links here with a
 // one-time token_hash — see supabase/templates/*.html). It verifies the token to establish
@@ -16,10 +16,28 @@ import { serverClient } from "@/lib/supabase/server";
 import { confirmDestination } from "@/lib/confirmDest";
 import { pendingSeedApplies } from "@/lib/confirmSeed";
 
+// GoTrue's EmailOtpType ends in `(string & {})`, so casting a query param to it typechecks any
+// string at all and hands it straight to verifyOtp. Narrow against the real member list instead.
+// These are every type the templates emit (signup, invite, magiclink, recovery, email_change)
+// plus email, which confirmDestination accepts so a link built with the generic type still routes
+// to the profile. An unrecognised type now takes the same path an absent one does.
+const OTP_TYPES = [
+    "signup",
+    "invite",
+    "magiclink",
+    "recovery",
+    "email_change",
+    "email",
+] as const satisfies readonly EmailOtpType[];
+
+function otpType(value: string | null): (typeof OTP_TYPES)[number] | null {
+    return OTP_TYPES.find((t) => t === value) ?? null;
+}
+
 export async function GET(req: NextRequest) {
     const url = new URL(req.url);
     const token_hash = url.searchParams.get("token_hash");
-    const type = url.searchParams.get("type") as EmailOtpType | null;
+    const type = otpType(url.searchParams.get("type"));
 
     if (token_hash && type) {
         const supabase = await serverClient();
