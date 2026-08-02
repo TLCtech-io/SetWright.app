@@ -18,12 +18,13 @@ import { coerceBreaks } from "../../lib/breakInput";
 import { coerceSongInput } from "../../lib/songInput";
 import { coerceConfidence } from "../../lib/confidenceInput";
 import { coerceEventTypeInput } from "../../lib/eventTypeInput";
+import { coerceReorderInput } from "../../lib/reorderInput";
 import {
     coercePrepSongIds,
     coerceAgendaItems,
     coerceRecordInput,
 } from "../../lib/rehearsalInput";
-import { MAX_FORM_ITEMS } from "../../lib/limits";
+import { MAX_FORM_ITEMS, MAX_SET_IDS } from "../../lib/limits";
 
 test("coerceCasting: empty clears; any malformed/unknown/over-cap entry rejects", () => {
     const parts = new Set(["part-1"]);
@@ -634,5 +635,48 @@ test("coerceRecordInput: date falls back; arrays strict; dupes normalize", () =>
         )?.attendance.length,
         1,
         "a duplicate member is normalized",
+    );
+});
+
+test("coerceReorderInput: shape and cardinality", () => {
+    assert.deepEqual(
+        coerceReorderInput({ order: ["a", "b"] }),
+        { ok: true, value: ["a", "b"] },
+        "a well-formed id list passes through unchanged",
+    );
+    assert.deepEqual(
+        coerceReorderInput({ order: [] }),
+        { ok: true, value: [] },
+        "an empty order is legal (nothing to reorder)",
+    );
+
+    // req.json() parses a literal `null` body, so the route's catch fallback never fires.
+    assert.equal(coerceReorderInput(null).ok, false, "a null body rejects");
+    assert.equal(
+        coerceReorderInput({}).ok,
+        false,
+        "a missing order rejects",
+    );
+    assert.equal(
+        coerceReorderInput({ order: "a,b" }).ok,
+        false,
+        "a string order rejects",
+    );
+    assert.equal(
+        coerceReorderInput({ order: ["a", 7] }).ok,
+        false,
+        "a non-string entry rejects the whole list, never silently drops it",
+    );
+
+    const atCap = Array.from({ length: MAX_SET_IDS }, (_, i) => `id${i}`);
+    assert.equal(
+        coerceReorderInput({ order: atCap }).ok,
+        true,
+        "a list exactly at the cap passes",
+    );
+    assert.equal(
+        coerceReorderInput({ order: [...atCap, "one-too-many"] }).ok,
+        false,
+        "one over the cap rejects rather than truncating",
     );
 });
