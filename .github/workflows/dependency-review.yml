@@ -20,15 +20,8 @@ jobs:
             - uses: actions/dependency-review-action@v5
               with:
                   fail-on-severity: high
-                  # Documented exception: sharp reaches the tree only as an optional dependency of
-                  # next, which pins ^0.34.5 and so cannot resolve the 0.35.0 fix. Nothing here
-                  # imports it. There is no next/image, no static image import, and no images
-                  # block in next.config.ts, so no build or runtime path loads it. The advisory is
-                  # CVSS 4.0 AV:L/PR:L, a local vector needing existing host access.
-                  #
-                  # Revisit the moment anyone adds next/image or a static image import. At that
-                  # point sharp becomes load-bearing and this line has to go.
-                  allow-ghsas: GHSA-f88m-g3jw-g9cj
+                  # No allow-ghsas list. The sharp exception that used to sit here is gone: the root
+                  # overrides now force the patched 0.35.x, so there is no advisory to allow.
                   # No PR comment, so the job needs no pull-requests: write. Results are in the
                   # job log and the checks tab. Same least-privilege line ci.yml takes.
                   comment-summary-in-pr: never
