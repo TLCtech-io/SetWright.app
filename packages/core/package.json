@@ -15,8 +15,8 @@
         "test": "tsx test/drafter.test.ts && tsx test/prefer.test.ts && tsx test/sequence.test.ts && tsx test/chase.test.ts && tsx test/pitch.test.ts && tsx test/casting.test.ts"
     },
     "devDependencies": {
-        "@types/node": "^26.1.2",
+        "@types/node": "^22.20.1",
         "tsx": "^4.23.1",
-        "typescript": "^7.0.2"
+        "typescript": "^5.9.3"
     }
 }

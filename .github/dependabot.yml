@@ -27,6 +27,17 @@ updates:
           - dependency-name: supabase
             update-types:
                 ["version-update:semver-major", "version-update:semver-minor"]
+          # A compiler major is a migration, not an update. TypeScript 7 is the native port and a
+          # different compiler: an unattended 5 -> 7 bump broke typecheck across all four workspaces
+          # with resolution, inference and narrowing changes that have nothing to do with our code.
+          # Minor and patch still flow through the non-major group.
+          - dependency-name: typescript
+            update-types: ["version-update:semver-major"]
+          # @types/node majors track Node releases, so this one is pinned to the runtime rather than
+          # to whatever is newest. ci.yml runs node-version 22, and types ahead of the runtime let
+          # typecheck pass on APIs that are not there at run time. Move it when the runner moves.
+          - dependency-name: "@types/node"
+            update-types: ["version-update:semver-major"]
 
     # Action versions drift and unpinned majors are a real supply chain surface.
     - package-ecosystem: github-actions

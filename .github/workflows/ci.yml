@@ -82,11 +82,10 @@ jobs:
               with:
                   node-version: 22
                   cache: npm
-            # Pinned to a commit, not to a floating ref. v2 on this repo is a branch with no matching
-            # tag, so it moves on every push and would change what runs in a job holding GITHUB_TOKEN.
-            # This SHA is the v2.1.1 release. The trailing comment names that tag rather than the
-            # branch, so Dependabot has a real version to resolve against when it raises the bump.
-            # Two coordinates move together on an upgrade: this SHA and the version below.
+            # Pinned to a commit, not to a floating ref, which would otherwise move under a job that
+            # holds GITHUB_TOKEN. This SHA is the v3.0.0 release. The trailing comment names the tag
+            # so Dependabot can resolve it, which is how this moved off v2.1.1. Two coordinates move
+            # together on an upgrade: this SHA and the version below.
             - uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v3.0.0
               with:
                   version: 2.109.1 # pinned to the dev devDependency's resolved version (package.json supabase ^2.108.0); bump together
@@ -106,16 +105,20 @@ jobs:
               with:
                   node-version: 22
                   cache: npm
-            # Pinned to a commit, not to a floating ref. v2 on this repo is a branch with no matching
-            # tag, so it moves on every push and would change what runs in a job holding GITHUB_TOKEN.
-            # This SHA is the v2.1.1 release. The trailing comment names that tag rather than the
-            # branch, so Dependabot has a real version to resolve against when it raises the bump.
-            # Two coordinates move together on an upgrade: this SHA and the version below.
+            # Pinned to a commit, not to a floating ref, which would otherwise move under a job that
+            # holds GITHUB_TOKEN. This SHA is the v3.0.0 release. The trailing comment names the tag
+            # so Dependabot can resolve it, which is how this moved off v2.1.1. Two coordinates move
+            # together on an upgrade: this SHA and the version below.
             - uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v3.0.0
               with:
                   version: 2.109.1 # pinned to the dev devDependency's resolved version (package.json supabase ^2.108.0); bump together
             - run: npm ci
-            - run: npx playwright install --with-deps chromium
+            # Resolved through the workspace that owns playwright, not through a bare root npx.
+            # npm hoists opportunistically, so @playwright/test sat in the root node_modules until a
+            # toolchain bump pushed it down into apps/web, and root npx stopped finding it (exit 127,
+            # "playwright: not found"). --no makes a missing binary fail loudly here rather than
+            # silently fetching some other version from the registry.
+            - run: npm exec --workspace apps/web --no -- playwright install --with-deps chromium
             - run: supabase start
             - run: npm run test:e2e
             - if: always()
