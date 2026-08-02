@@ -23,6 +23,7 @@ import {
     ACTIVE_ENSEMBLE_COOKIE_OPTIONS,
 } from "./lib/ensemble";
 import { crossOriginWriteRefused } from "./lib/csrf";
+import { SUPABASE_COOKIE_OPTIONS } from "./lib/cookies";
 import { MAX_REQUEST_BYTES } from "./lib/limits";
 import { isPublicId } from "./lib/publicId";
 import { memberBounceTarget } from "./lib/ensemblePath";
@@ -74,6 +75,7 @@ export async function proxy(request: NextRequest) {
 
     let response = NextResponse.next({ request });
     const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+        cookieOptions: SUPABASE_COOKIE_OPTIONS,
         cookies: {
             getAll() {
                 return request.cookies.getAll();
@@ -227,7 +229,18 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
     // Run on everything except static assets; the body decides per data source.
-    matcher: [
-        "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-    ],
+    //
+    // The exclusions name real asset paths (the _next output, and the two public/ folders this
+    // app ships) instead of testing for a file extension. An extension test like `.*\.png$`
+    // matches against the whole path, because `.` matches `/` as well, so any request whose
+    // path ended in one of those six extensions skipped the proxy outright. That took the
+    // non-director bounce with it, and also the CSRF refusal, the request-size cap and the
+    // auth redirect. Nothing reachable exploited it, because every terminal dynamic API
+    // segment is guarded by badPathUuid(), but the gate was failing open rather than closed.
+    //
+    // brand/ has to stay excluded for a reason that is easy to miss on a later edit: the auth
+    // email templates and the edge-function shell fetch the lockup from /brand/, and a mail
+    // client requests it with no cookies. Running the proxy there would answer a redirect
+    // instead of an image, in every invite and recovery mail the app sends.
+    matcher: ["/((?!_next/static|_next/image|favicon.ico|brand/|favicons/).*)"],
 };
