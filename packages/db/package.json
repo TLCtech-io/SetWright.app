@@ -9,7 +9,7 @@
         "test": "tsx test/validate.ts && tsx test/authEmail.test.ts"
     },
     "devDependencies": {
-        "@types/node": "^20.14.0",
+        "@types/node": "^26.1.2",
         "pg-query-emscripten": "^5.1.0",
         "tsx": "^4.23.1",
         "typescript": "^7.0.2"
