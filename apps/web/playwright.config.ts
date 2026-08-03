@@ -20,6 +20,10 @@ const serviceKey = /SERVICE_ROLE_KEY="?([^"\n]+)/.exec(status)?.[1] ?? "";
 
 export default defineConfig({
     testDir: "./test/e2e",
+    // Reseed once before the suite, so a local run against a long-lived stack behaves like CI's
+    // fresh one. Specs mutate seed users (email-change renames rae), which otherwise makes the
+    // second local run fail on state left by the first.
+    globalSetup: "./test/e2e/global-setup.ts",
     timeout: 30_000,
     fullyParallel: false,
     // One worker, always. Specs reuse a few seed users, so several share ana@example.com, and
