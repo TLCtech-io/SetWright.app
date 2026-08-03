@@ -6,7 +6,13 @@
 // seat so the fresh link binds even if it had aged out -- never an open relay to arbitrary inboxes. (3) It
 // ALWAYS returns the same message and sends the email AFTER the response (via after()), so neither the body,
 // the status, nor the response latency reveals whether the address has a pending invite -- enumeration-safe.
-// Failures are logged server-side (never reaching the client) so a misconfig is not a silent false success.
+// Failures are logged server-side (never reaching the client) so a misconfig is not a silent false success;
+// that includes a delivery failure, which sendMemberInvite reports in its return value rather than throwing.
+//
+// What is NOT bounded here: request volume. The per-address ceiling limits emails to a given victim and the
+// sweep in migration 061 keeps invite_rate_event from growing without bound, but neither caps how often an
+// anonymous caller may invoke this route. That is a platform rate-limit rule keyed by IP, not something the
+// database or this handler can do.
 
 import { after, NextResponse } from "next/server";
 import { dataSource } from "@/lib/env";
@@ -54,11 +60,23 @@ export async function POST(req: Request) {
                 // outbound email round trip is the only large latency difference, and moving it past the response
                 // closes the timing oracle. The seat was renewed above, so the emailed link binds on accept.
                 if (pending === true) {
-                    after(() =>
-                        sendMemberInvite(parsed.value).catch((e) =>
-                            console.error("[resend] send failed:", e),
-                        ),
-                    );
+                    after(async () => {
+                        // sendMemberInvite reports a delivery failure in its return value and does
+                        // not throw, so catching a rejection alone would have logged nothing in the
+                        // case the comment above promises to log. Read the result.
+                        try {
+                            const delivery = await sendMemberInvite(
+                                parsed.value,
+                            );
+                            if (!delivery.delivered)
+                                console.error(
+                                    "[resend] send failed:",
+                                    delivery.message,
+                                );
+                        } catch (e) {
+                            console.error("[resend] send threw:", e);
+                        }
+                    });
                 }
             }
         } catch (e) {

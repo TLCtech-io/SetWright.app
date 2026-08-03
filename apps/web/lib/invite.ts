@@ -97,6 +97,14 @@ export async function sendMemberInvite(
             // email lands on /auth/confirm, which binds the seat invited under this verified address.
             // The success message matches the new-account branch on purpose: a distinct message would
             // let any director probe which emails already hold accounts (enumeration).
+            //
+            // Note what this means when the caller is the unauthenticated resend route: a third party
+            // can cause a live sign-in link to be mailed to someone else's address. It is bounded and
+            // it is intended. The link only ever goes TO the address it signs in, only for an address
+            // that already holds a pending seat in an active ensemble, and at most 3 times an hour.
+            // It is also necessary: claim_membership runs from exactly one place, /auth/confirm, so
+            // an invitee who already has an account has no other way to bind their seat. Removing it
+            // would strand them, not protect them.
             const anon = createClient(supabaseUrl, supabaseAnonKey, {
                 auth: { persistSession: false },
             });
