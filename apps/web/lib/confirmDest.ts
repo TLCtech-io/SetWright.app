@@ -14,12 +14,23 @@
 export function confirmDestination(
     type: string,
     firstToken: string | null,
+    hasPendingInvitations = false,
 ): string {
     const needsPassword = type === "invite" || type === "recovery";
     if (needsPassword) {
         const params = new URLSearchParams();
         if (firstToken) params.set("e", firstToken);
         if (type === "recovery") params.set("reset", "1");
+        // Carried through so the welcome screen knows there is somewhere to send them after the
+        // password: an invited person now binds no seat on confirm, so without this they would land
+        // on /auth/no-access holding an invitation they had not been asked about yet.
+        //
+        // Only for an invite. A recovery is someone resetting a password, and that errand ends at the
+        // home resolver whether or not an invitation happens to be waiting. welcomeDest checks reset
+        // first and would ignore the flag anyway, so setting it there would only put a misleading
+        // parameter in the URL.
+        if (type === "invite" && !firstToken && hasPendingInvitations)
+            params.set("invited", "1");
         const qs = params.toString();
         return `/auth/welcome${qs ? `?${qs}` : ""}`;
     }
@@ -28,5 +39,6 @@ export function confirmDestination(
             ? `/e/${firstToken}/me/profile?email=changed`
             : "/?email=changed";
     }
-    return firstToken ? `/e/${firstToken}/dashboard` : "/auth/no-access";
+    if (firstToken) return `/e/${firstToken}/dashboard`;
+    return hasPendingInvitations ? "/auth/invitations" : "/auth/no-access";
 }

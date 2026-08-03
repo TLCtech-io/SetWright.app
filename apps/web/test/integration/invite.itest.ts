@@ -1,5 +1,5 @@
 // The invite/claim keystone. inviteMember records a pending seat's invite email
-// (RLS: director only); claim_membership() binds the seat invited under the caller's GoTrue-VERIFIED
+// (RLS: director only); accept_invitation() binds the seat invited under the caller's GoTrue-VERIFIED
 // email (auth.email(), no bearer token), skipping ensembles the caller already belongs to. Seed
 // fixtures: Harmony Collective (A) has Ana (director), Ben (member), and two PENDING seats — Cleo
 // (invited under rae@example.com) and Dane (invited under ana@example.com). Rae directs Riverside (B).
@@ -173,10 +173,11 @@ export async function run(): Promise<void> {
         "a non-director reads zero rows from member_invite (invite emails hidden)",
     );
 
-    // --- claim_membership() (the bind, by VERIFIED email, no bearer token) ----
-    // Cleo's seat is invited under rae@example.com. A caller whose verified email matches no pending
-    // seat binds nothing; rae's email matches Cleo's seat and binds it. There is no token to present —
-    // the bind is by the session's verified email (auth.email()).
+    // --- accept_invitation() (the bind, by VERIFIED email, on the invitee's say-so) ----
+    // Cleo's seat is invited under rae@example.com. Nothing binds until the person named on the seat
+    // accepts: there is no token to present, the bind is by the session's verified email
+    // (auth.email()), and the ensemble argument only narrows which of the caller's own invitations to
+    // act on. A caller with no invitation for that ensemble binds nothing.
     const { client: rae } = await signInAs("rae@example.com");
     const before =
         (
@@ -186,22 +187,36 @@ export async function run(): Promise<void> {
                 .eq("user_id", RAE_UID)
         ).count ?? 0;
     // Ben (member of A, ben@example.com) has no pending seat under his address → binds nothing.
-    const noMatch = await ben.rpc("claim_membership");
+    const noMatch = await ben.rpc("accept_invitation", { p_ensemble: ensA });
     assert(
-        ((noMatch.data ?? []) as unknown[]).length === 0,
+        noMatch.data === false,
         "an email matching no pending seat binds nothing",
     );
-    const { data: claimed, error: claimErr } =
-        await rae.rpc("claim_membership");
+    // Rae sees exactly her own invitation before deciding. The definer reader is the only way she
+    // could: she holds no member row in A, so member_read, ensemble_read and member_invite_read all
+    // resolve to nothing for her there.
+    const offered = (await rae.rpc("list_pending_invitations")).data as Array<{
+        ensemble_id: string;
+        ensemble_name: string;
+        seat_name: string;
+    }> | null;
+    assert(
+        (offered ?? []).length === 1 && offered![0]!.ensemble_id === ensA,
+        "rae is offered exactly the Harmony Collective invitation",
+    );
+    assert(
+        offered![0]!.seat_name === "Cleo" && !!offered![0]!.ensemble_name,
+        "the offer names the seat and the ensemble, which she cannot read directly",
+    );
+    const { data: claimed, error: claimErr } = await rae.rpc(
+        "accept_invitation",
+        { p_ensemble: ensA },
+    );
     assert(
         !claimErr,
-        `claim_membership runs without error (${claimErr?.message ?? "ok"})`,
+        `accept_invitation runs without error (${claimErr?.message ?? "ok"})`,
     );
-    const claimedRows = (claimed ?? []) as Array<{ ensemble_id: string }>;
-    assert(
-        claimedRows.length === 1 && claimedRows[0]!.ensemble_id === ensA,
-        "rae's verified email claims exactly the Harmony Collective seat",
-    );
+    assert(claimed === true, "rae accepts the Harmony Collective invitation");
     const after =
         (
             await rae
@@ -230,7 +245,7 @@ export async function run(): Promise<void> {
     ).data as unknown[] | null;
     assert(
         (cleoInvite ?? []).length === 0,
-        "Cleo's invite row is cleared on claim",
+        "Cleo's invite row is cleared on accept",
     );
     // Transition: with the invite row gone, refresh_pending_invite flips to false for that address -- a
     // claimed invite is no longer resendable (the self-serve resend would send nothing for it).
@@ -243,19 +258,24 @@ export async function run(): Promise<void> {
         "refresh_pending_invite is false once the seat is claimed (invite row gone)",
     );
 
-    // Idempotent: re-running the claim now that the seat is bound (user_id set) binds nothing more.
-    const again = await rae.rpc("claim_membership");
+    // Idempotent: accepting again now that the seat is bound (user_id set) binds nothing more, and
+    // reports false rather than a second success.
+    const again = await rae.rpc("accept_invitation", { p_ensemble: ensA });
+    assert(again.data === false, "re-accepting is a no-op");
     assert(
-        ((again.data ?? []) as unknown[]).length === 0,
-        "re-claiming is a no-op",
+        (((await rae.rpc("list_pending_invitations")).data ?? []) as unknown[])
+            .length === 0,
+        "an accepted invitation stops being offered",
     );
 
     // Ana already holds a seat in A → even though Dane's seat is invited under ana@example.com, her
-    // claim SKIPS that ensemble (the unique (ensemble_id,user_id) guard).
-    const { data: anaClaim } = await ana.rpc("claim_membership");
+    // accept SKIPS that ensemble (the unique (ensemble_id,user_id) guard).
+    const { data: anaClaim } = await ana.rpc("accept_invitation", {
+        p_ensemble: ensA,
+    });
     assert(
-        ((anaClaim ?? []) as unknown[]).length === 0,
-        "claim skips an ensemble the caller already belongs to",
+        anaClaim === false,
+        "accepting skips an ensemble the caller already belongs to",
     );
     const daneId = await seatId(ana, ensA, "Dane");
     const dane = (
@@ -277,6 +297,41 @@ export async function run(): Promise<void> {
     assert(
         dane.user_id === null && daneInvite?.invite_email === "ana@example.com",
         "Dane's seat stays pending with its invite in the side table",
+    );
+
+    // --- decline: refusing is recorded, not silently dropped ------------------------------
+    // Dane's seat is invited under ana@example.com. She cannot accept it (she already holds a seat in
+    // A), but she can refuse it, and refusing has to leave a trace: an invitation that simply vanished
+    // would read to the director as still waiting.
+    assert(
+        (await ana.rpc("decline_invitation", { p_ensemble: ensA })).data ===
+            true,
+        "an invited address can decline",
+    );
+    const declined = (
+        await ana
+            .from("member_invite")
+            .select("declined_at")
+            .eq("ensemble_id", ensA)
+            .eq("member_id", daneId)
+            .maybeSingle()
+    ).data as { declined_at: string | null } | null;
+    assert(
+        declined !== null && declined.declined_at !== null,
+        "the declined invitation is stamped and kept, so the director sees the outcome",
+    );
+    assert(
+        (await ana.rpc("decline_invitation", { p_ensemble: ensA })).data ===
+            false,
+        "declining twice reports nothing left to decline",
+    );
+    assert(
+        (
+            await svc.rpc("refresh_pending_invite", {
+                p_email: "ana@example.com",
+            })
+        ).data === false,
+        "a declined invitation is not resurrected by the self-serve resend",
     );
 
     // --- 052: the dead-end invite pre-check + ensemble_seat_for_email scoping (Bug audit H3) -----

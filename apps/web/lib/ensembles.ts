@@ -124,3 +124,31 @@ export async function canFoundEnsemble(): Promise<boolean> {
         .maybeSingle();
     return ((data?.founding_credits as number | undefined) ?? 0) > 0;
 }
+
+/**
+ * How many invitations are waiting for the signed-in user to decide on. Used to surface an entry
+ * point to /auth/invitations for someone who never came through a confirm link: nothing binds a seat
+ * automatically any more, so an invitee who signs in with a password would otherwise have no way to
+ * discover that a seat is waiting for them. Reads through list_pending_invitations because an invitee
+ * holds no member row and can read neither the invitation nor the ensemble that sent it. Mock mode
+ * has no invitations.
+ */
+export async function countPendingInvitations(): Promise<number> {
+    if (dataSource !== "supabase") return 0;
+    const supabase = await serverClient();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return 0;
+    const { data, error } = await supabase.rpc("list_pending_invitations");
+    if (error) {
+        // Never block a page on this: it decorates, it does not gate. The invitations screen runs the
+        // same query and is the authority.
+        console.error(
+            "[invitations] list_pending_invitations failed:",
+            error.message,
+        );
+        return 0;
+    }
+    return Array.isArray(data) ? data.length : 0;
+}

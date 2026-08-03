@@ -8,8 +8,8 @@
 //                         user and emails an invite link.
 //   - existing account -> a magic-link sign-in (signInWithOtp, shouldCreateUser:false),
 //                         since you cannot "invite" an account that already exists.
-// Either email links to /auth/confirm, which verifies the token, runs claim_membership(),
-// and binds the seat. Locally GoTrue captures the email in Mailpit (:54324); in production
+// Either email links to /auth/confirm, which verifies the token and establishes a session. The
+// seat is bound only when the invitee accepts at /auth/invitations. Locally GoTrue captures the email in Mailpit (:54324); in production
 // the Send Email Hook renders + delivers it through Resend (see supabase/functions/send-email/index.ts).
 
 import { createClient } from "@supabase/supabase-js";
@@ -49,9 +49,9 @@ function alreadyRegistered(message: string): boolean {
 
 /**
  * Deliver the invite/sign-in email for `email`. The link lands on /auth/confirm, which verifies the
- * GoTrue OTP and then binds the seat invited under this now-VERIFIED address (claim_membership matches
- * member.invite_email to auth.email()). No per-seat bearer token rides in the user's readable
- * metadata anymore, so there is nothing to lift before the claim. In mock mode there is no auth
+ * GoTrue OTP and establishes a session. It does not bind the seat: accept_invitation does that when
+ * the invitee says yes, matching member_invite.invite_email to auth.email(). No per-seat bearer token
+ * rides in the user's readable metadata, so there is nothing to lift. In mock mode there is no auth
  * backend, so nothing is sent — the seat is still recorded.
  *
  * `ctx` only shapes what the email says. It is stamped as user_metadata so the Send Email hook can
@@ -94,7 +94,7 @@ export async function sendMemberInvite(
 
         if (alreadyRegistered(error.message)) {
             // Existing account: you cannot "invite" an existing user, so send a magic-link sign-in. Either
-            // email lands on /auth/confirm, which binds the seat invited under this verified address.
+            // email lands on /auth/confirm, which verifies the address and lets them decide on the seat.
             // The success message matches the new-account branch on purpose: a distinct message would
             // let any director probe which emails already hold accounts (enumeration).
             //
@@ -102,8 +102,8 @@ export async function sendMemberInvite(
             // can cause a live sign-in link to be mailed to someone else's address. It is bounded and
             // it is intended. The link only ever goes TO the address it signs in, only for an address
             // that already holds a pending seat in an active ensemble, and at most 3 times an hour.
-            // It is also necessary: claim_membership runs from exactly one place, /auth/confirm, so
-            // an invitee who already has an account has no other way to bind their seat. Removing it
+            // It is also necessary: it is how an invitee who already holds an account gets a session
+            // at all, and without a session they cannot reach /auth/invitations to accept. Removing it
             // would strand them, not protect them.
             const anon = createClient(supabaseUrl, supabaseAnonKey, {
                 auth: { persistSession: false },

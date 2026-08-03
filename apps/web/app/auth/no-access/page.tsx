@@ -1,5 +1,7 @@
+import { redirect } from "next/navigation";
 import { AuthShell } from "@/components/AuthShell";
 import { ResendInviteForm } from "@/components/ResendInviteForm";
+import { countPendingInvitations } from "@/lib/ensembles";
 
 export const dynamic = "force-dynamic";
 
@@ -7,7 +9,17 @@ export const dynamic = "force-dynamic";
 // under a different address so it bound no seat). It explains the situation, offers a fresh invite link
 // (sent only if a seat is still waiting), and a way to sign out. Wired from /auth/confirm's no-ensemble
 // destination and the welcome page's no-ensemble fallback.
-export default function NoAccessPage() {
+//
+// An invitation that is actually waiting makes this page's whole story wrong, and it became reachable in
+// that state once seats stopped binding automatically: someone who signed in with a password rather than
+// a link has an invitation and no membership at the same time. Send them to the decision instead of
+// telling them their invitation probably expired.
+export default async function NoAccessPage() {
+    if ((await countPendingInvitations()) > 0) redirect("/auth/invitations");
+    return renderNoAccess();
+}
+
+function renderNoAccess() {
     return (
         <AuthShell
             footer={
