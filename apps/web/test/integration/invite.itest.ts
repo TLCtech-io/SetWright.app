@@ -4,7 +4,7 @@
 // fixtures: Harmony Collective (A) has Ana (director), Ben (member), and two PENDING seats — Cleo
 // (invited under rae@example.com) and Dane (invited under ana@example.com). Rae directs Riverside (B).
 import { createSupabaseRepository } from "../../lib/supabase/repository";
-import { assert, signInAs, serviceClient } from "./helpers";
+import { assert, signInAs, serviceClient, sqlAsPostgres } from "./helpers";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 const ANA_UID = "00000000-0000-0000-0000-0000000000a1";
@@ -97,6 +97,35 @@ export async function run(): Promise<void> {
             })
         ).error !== null,
         "refresh_pending_invite is not callable by an authenticated user (no enumeration)",
+    );
+
+    // Self-serve renewal is capped against first_invited_at, which nothing on the resend path can
+    // move. Age the anchor past the cap and the same call that succeeded above now refuses, so an
+    // anonymous caller who knows the address cannot hold a seat bindable indefinitely by resending
+    // it every fortnight. Restored afterwards so the rest of this domain sees a live invite.
+    sqlAsPostgres(
+        `update public.member_invite set first_invited_at = now() - interval '31 days'
+         where lower(invite_email) = 'newbie@example.com';`,
+    );
+    assert(
+        (
+            await svc.rpc("refresh_pending_invite", {
+                p_email: "Newbie@Example.com",
+            })
+        ).data === false,
+        "refresh_pending_invite refuses once the invitation is past the renewal cap",
+    );
+    sqlAsPostgres(
+        `update public.member_invite set first_invited_at = now()
+         where lower(invite_email) = 'newbie@example.com';`,
+    );
+    assert(
+        (
+            await svc.rpc("refresh_pending_invite", {
+                p_email: "Newbie@Example.com",
+            })
+        ).data === true,
+        "a within-cap invitation still renews, so the cap is what refused above",
     );
 
     // The same address is already pending on Cleo's seat → rejected (the partial unique index).
