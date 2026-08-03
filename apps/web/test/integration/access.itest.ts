@@ -84,6 +84,14 @@ export async function run(): Promise<void> {
         orphan.error !== null,
         "a direct write cannot null the sole active director's user_id",
     );
+    // Two guards now refuse this, and which one answers is decided by alphabetical trigger order.
+    // Pin it: member_last_director_guard must still fire before member_seat_binding_guard, so this
+    // assertion keeps testing the last-director rule rather than silently becoming a test of the
+    // binding guard. If this fails, rename the trigger rather than loosening the assertion.
+    assert(
+        /at least one active director/.test(orphan.error?.message ?? ""),
+        "the sole-director guard is the one that answers, not the binding guard",
+    );
     const bound = (
         await ana.from("member").select("user_id").eq("id", anaSeat).single()
     ).data as { user_id: string | null };
@@ -151,5 +159,81 @@ export async function run(): Promise<void> {
     assert(
         reparent.error !== null,
         "the sole director seat cannot be re-parented to another ensemble",
+    );
+
+    // --- Binding an account to a seat is the invitee's act, not the director's ------
+    // These are ordinary seats, so guard_last_director does not cover them: member_seat_binding_guard
+    // is the only thing refusing the writes below. Without it the first one succeeds, which is the
+    // whole finding.
+    const anaEns = (
+        (
+            await ana
+                .from("member")
+                .select("ensemble_id")
+                .eq("id", anaSeat)
+                .single()
+        ).data as { ensemble_id: string }
+    ).ensemble_id;
+    const unclaimed = (
+        await ana
+            .from("member")
+            .select("id")
+            .eq("ensemble_id", anaEns)
+            .is("user_id", null)
+            .limit(1)
+            .single()
+    ).data as { id: string };
+
+    const bind = await ana
+        .from("member")
+        .update({ user_id: MIA_UID })
+        .eq("id", unclaimed.id);
+    assert(
+        bind.error !== null,
+        "a director cannot bind another account to an unclaimed seat",
+    );
+    assert(
+        (
+            (
+                await ana
+                    .from("member")
+                    .select("user_id")
+                    .eq("id", unclaimed.id)
+                    .single()
+            ).data as { user_id: string | null }
+        ).user_id === null,
+        "the seat is still unbound after the refused write",
+    );
+
+    // The INSERT path reaches the same outcome without touching an existing row, so the blanket
+    // grant makes it a second door onto the same hole.
+    const ghost = await ana.from("member").insert({
+        ensemble_id: anaEns,
+        display_name: "Ghost",
+        user_id: MIA_UID,
+        permission_tier: "member",
+        status: "active",
+        is_singing: true,
+    });
+    assert(
+        ghost.error !== null,
+        "a director cannot create a seat already bound to another account",
+    );
+    assert(
+        ((await ana.from("member").select("id").eq("user_id", MIA_UID)).data ?? [])
+            .length === 0,
+        "no seat in this ensemble ended up bound to the other account",
+    );
+
+    // The guard names user_id and ensemble_id and ignores every other column, so ordinary roster
+    // editing is untouched. This is the assertion that fails if the mechanism is ever swapped for
+    // a column-privilege list that misses a column.
+    const rename = await ana
+        .from("member")
+        .update({ display_name: "Renamed", is_singing: false })
+        .eq("id", unclaimed.id);
+    assert(
+        rename.error === null,
+        "an ordinary roster edit on the same seat still succeeds",
     );
 }
