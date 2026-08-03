@@ -76,6 +76,12 @@ jobs:
             # test file runs nowhere until it is appended. Without this, verify goes green over coverage
             # that never executed. Needs node but not the dependencies, so it runs before npm ci.
             - run: node scripts/check-test-registration.mjs
+            # CREATE OR REPLACE FUNCTION clears a function's configuration, so a redeclaration
+            # silently drops an earlier `set search_path` pin. Migration 059 pins the two hydration
+            # functions by ALTER rather than redeclaring them, and hydrate_draft_input has already
+            # been redeclared five times. This models the final state of every function in the set.
+            # Needs node but not the dependencies, so it runs before npm ci.
+            - run: node scripts/check-search-path-pins.mjs
             - run: npm ci
             - run: npm run verify
 

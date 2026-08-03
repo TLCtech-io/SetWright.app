@@ -51,6 +51,7 @@ export default async function EditMemberPage({
                 memberId={uuid}
                 claimed={member.claimed}
                 inviteEmail={member.inviteEmail}
+                inviteDeclinedAt={member.inviteDeclinedAt}
             />
         </main>
     );

@@ -38,6 +38,7 @@ function payload(
         meta?: Record<string, unknown>;
         tokenHash?: string;
         tokenHashNew?: string;
+        redirectTo?: string;
     } = {},
 ): HookPayload {
     return {
@@ -49,9 +50,12 @@ function payload(
         email_data: {
             token: "305805",
             token_hash: over.tokenHash ?? "7d5b7b1964cf5d388340a7f04f1dbb5e",
-            redirect_to: "",
+            // Shaped like a REAL GoTrue hook payload, which is the part this fixture used to get
+            // wrong: site_url is GoTrue's own external URL, and redirect_to is where the user
+            // should land. Inverting them is how a broken link shipped while this suite was green.
+            redirect_to: over.redirectTo ?? "https://app.example.com",
             email_action_type: actionType,
-            site_url: "https://app.example.com",
+            site_url: "https://proj.supabase.co/auth/v1",
             ...(over.tokenHashNew ? { token_hash_new: over.tokenHashNew } : {}),
         },
     };
@@ -439,3 +443,53 @@ function copyStrings(kind: (typeof EMAIL_KINDS)[number]): string[] {
 }
 
 console.log(`\n${checks} checks passed`);
+
+// --- The origin the links are built against ---------------------------------------------
+
+check(
+    "links are built against redirect_to, never GoTrue's own site_url",
+    () => {
+        // The bug this pins: site_url in a hook payload is GoTrue's external URL, so on a hosted
+        // project it is https://<ref>.supabase.co/auth/v1. Building against it emitted
+        // https://<ref>.supabase.co/auth/v1/auth/confirm?..., which the API gateway rejects with
+        // "No API key found in request". The old fixture set site_url to the app origin and
+        // redirect_to to "", so the suite was green while production was broken.
+        const plan = messagesForHook(payload("recovery"));
+        assert.equal(plan.ok, true);
+        const body = plan.ok ? plan.messages[0]!.html : "";
+        assert.ok(
+            body.includes("https://app.example.com/auth/confirm?token_hash="),
+            "the link uses the app origin from redirect_to",
+        );
+        assert.ok(
+            !body.includes("proj.supabase.co"),
+            "GoTrue's own external URL never appears in a link",
+        );
+    },
+);
+
+check("a redirect_to carrying a path contributes only its origin", () => {
+    const plan = messagesForHook(
+        payload("recovery", {
+            redirectTo: "https://app.example.com/auth/welcome?reset=1",
+        }),
+    );
+    assert.equal(plan.ok, true);
+    const body = plan.ok ? plan.messages[0]!.html : "";
+    assert.ok(
+        body.includes("https://app.example.com/auth/confirm?token_hash="),
+        "the path is dropped; every link appends its own",
+    );
+});
+
+check("site_url is the fallback when redirect_to is absent", () => {
+    // Not the happy path, but a payload without redirect_to should still send something rather
+    // than nothing, which is how the local Go-template surface has always behaved.
+    const plan = messagesForHook(payload("recovery", { redirectTo: "" }));
+    assert.equal(plan.ok, true);
+    const body = plan.ok ? plan.messages[0]!.html : "";
+    assert.ok(
+        body.includes("https://proj.supabase.co/auth/confirm?token_hash="),
+        "falls back to the origin of site_url",
+    );
+});

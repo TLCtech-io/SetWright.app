@@ -14,11 +14,13 @@ export function InviteControl({
     memberId,
     claimed,
     inviteEmail,
+    inviteDeclinedAt,
 }: {
     ensembleId: string;
     memberId: string;
     claimed: boolean;
     inviteEmail: string | null;
+    inviteDeclinedAt: string | null;
 }) {
     const router = useRouter();
     const [email, setEmail] = useState(inviteEmail ?? "");
@@ -86,9 +88,11 @@ export function InviteControl({
         <section className="invite-box">
             <p className="section-label">Invite to claim a login</p>
             <p className="muted">
-                {inviteEmail
-                    ? `Invited as ${inviteEmail}, not accepted yet. Resend if it didn't arrive.`
-                    : "Email this member a link to set up an account and self-manage their availability."}
+                {inviteEmail && inviteDeclinedAt
+                    ? `${inviteEmail} declined this invitation. The seat is still free, so you can invite someone else or ask them again.`
+                    : inviteEmail
+                      ? `Invited as ${inviteEmail}, not accepted yet. Resend if it didn't arrive.`
+                      : "Email this member a link to set up an account and self-manage their availability."}
             </p>
             <form className="invite-form" onSubmit={onSubmit}>
                 <input

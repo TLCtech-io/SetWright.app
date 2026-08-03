@@ -3,13 +3,24 @@
 // One place, so the auth session cookie and the active-ensemble selection cannot drift apart
 // on the attribute that matters most.
 
-// Secure in production, off under `next dev` so plain-http local development still works.
-// The Playwright run is not an exception to that: playwright.config.ts starts a production
-// build (`next build && next start`), so this resolves true there and the session cookie is
-// set with Secure over plain http on 127.0.0.1. Chromium treats loopback as a potentially
-// trustworthy origin and stores it anyway, which is what the active_ensemble cookie has
-// always relied on.
-export const SECURE_COOKIES = process.env.NODE_ENV === "production";
+// Secure everywhere except `next dev`, which is the one context that genuinely needs plain
+// http to work.
+//
+// Read the polarity carefully, because it is the point. Testing for "development" rather than
+// for "production" makes the safe answer the default: an unset, misspelled, or overridden
+// NODE_ENV yields Secure, not a session token in the clear. `next start` only DEFAULTS
+// NODE_ENV to production (next/dist/bin/next: `process.env.NODE_ENV || defaultEnv`), so a
+// pre-set value is honoured with nothing but a warning, and a self-hosted deploy that gets it
+// wrong would otherwise ship every session cookie unprotected. There is no assertion available
+// that could catch that, since the app cannot tell a real deployment from a local run, so the
+// default has to be the secure one.
+//
+// The Playwright run is not an exception: playwright.config.ts starts a production build
+// (`next build && next start`), so Secure is on there and the cookie is set over plain http on
+// 127.0.0.1. Chromium treats loopback as a potentially trustworthy origin and stores it anyway,
+// which is what the active_ensemble cookie has always relied on. Note that Playwright's own
+// APIRequestContext does NOT (see test/e2e/admin-gate.spec.ts).
+export const SECURE_COOKIES = process.env.NODE_ENV !== "development";
 
 // Handed to @supabase/ssr at every client construction site. Without it the session cookie
 // ships with no Secure attribute: the library's DEFAULT_COOKIE_OPTIONS sets path, sameSite,

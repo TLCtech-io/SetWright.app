@@ -234,7 +234,7 @@ export function toAttendanceItem(r: Row): AttendanceItem {
 // returns it only to a director; a plain member gets an empty embed, so inviteEmail/invitedAt read
 // as null for them — the masking is the database's, not the projection's.
 export const MEMBER_SELECT =
-    "*, member_voice_part(voice_part_id, is_primary_section), member_invite(invite_email, invited_at)";
+    "*, member_voice_part(voice_part_id, is_primary_section), member_invite(invite_email, invited_at, declined_at)";
 export function toMemberRow(r: Row): MemberRow {
     return {
         id: r.id,
@@ -262,5 +262,10 @@ export function toMemberRow(r: Row): MemberRow {
                 ? r.member_invite[0]
                 : r.member_invite
             )?.invited_at ?? null,
+        inviteDeclinedAt:
+            (Array.isArray(r.member_invite)
+                ? r.member_invite[0]
+                : r.member_invite
+            )?.declined_at ?? null,
     };
 }

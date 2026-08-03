@@ -126,6 +126,9 @@ export interface MemberRow extends Member {
     claimed: boolean;
     inviteEmail: string | null;
     invitedAt: string | null;
+    // Set when the invitee refused. The invitation is kept rather than deleted so the roster can say
+    // so: a row that simply vanished would read to the director as one still waiting.
+    inviteDeclinedAt: string | null;
 }
 
 export type SongStatus = "active" | "archived";
@@ -330,6 +333,7 @@ const members: MemberRow[] = [
         claimed: true,
         inviteEmail: null,
         invitedAt: null,
+        inviteDeclinedAt: null,
     },
     {
         id: "m2",
@@ -344,6 +348,7 @@ const members: MemberRow[] = [
         claimed: true,
         inviteEmail: null,
         invitedAt: null,
+        inviteDeclinedAt: null,
     },
     // Cleo + Dane demo the pending-invite state (display-only in mock mode).
     {
@@ -362,6 +367,7 @@ const members: MemberRow[] = [
         claimed: false,
         inviteEmail: "cleo@example.com",
         invitedAt: "2026-06-27T00:00:00.000Z",
+        inviteDeclinedAt: null,
     },
     {
         id: "m4",
@@ -376,6 +382,7 @@ const members: MemberRow[] = [
         claimed: false,
         inviteEmail: "dane@example.com",
         invitedAt: "2026-06-27T00:00:00.000Z",
+        inviteDeclinedAt: null,
     },
     // Fiona + Gus give the casting suggestions cross-section overlap to explore: Fiona
     // is an alto whose top reaches into the soprano line, Gus a high baritone who
@@ -393,6 +400,7 @@ const members: MemberRow[] = [
         claimed: false,
         inviteEmail: null,
         invitedAt: null,
+        inviteDeclinedAt: null,
     },
     {
         id: "m6",
@@ -407,6 +415,7 @@ const members: MemberRow[] = [
         claimed: false,
         inviteEmail: null,
         invitedAt: null,
+        inviteDeclinedAt: null,
     },
 ];
 
@@ -2467,6 +2476,7 @@ export function createMember(input: MemberInput): MemberRow {
         claimed: false,
         inviteEmail: null,
         invitedAt: null,
+        inviteDeclinedAt: null,
     };
     members.push(row);
     return cloneMember(row);
@@ -2480,7 +2490,7 @@ export function createMember(input: MemberInput): MemberRow {
 export type InviteResult =
     | { ok: true }
     // A dead-end invite: the email already belongs to a claimed seat here (active member, or an
-    // archived one), so claim_membership could never bind it. The director should reactivate that
+    // archived one), so accept_invitation could never bind it. The director should reactivate that
     // seat instead. memberName lets the caller name the person in the message.
     | {
           ok: false;
@@ -2508,6 +2518,7 @@ export function inviteMember(
     }
     row.inviteEmail = normalized;
     row.invitedAt = new Date().toISOString();
+    row.inviteDeclinedAt = null;
     return { ok: true };
 }
 
@@ -2632,6 +2643,7 @@ export function setMemberStatus(
         // must not keep a claimable invite. Reactivation is the path back and needs no stale invite.
         row.inviteEmail = null;
         row.invitedAt = null;
+        row.inviteDeclinedAt = null;
     }
     return { ok: true, member: cloneMember(row) };
 }
