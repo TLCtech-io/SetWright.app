@@ -2,9 +2,10 @@
 //
 // The landing route for every member-invite / sign-in email (the email links here with a
 // one-time token_hash — see supabase/templates/*.html). It verifies the token to establish
-// a session, binds any seats the now-verified email was invited to (claim_membership),
-// then routes the user into the app. A brand-new invited account has no password yet, so it
-// goes to /auth/welcome to set one; an account that already had a password goes straight in.
+// a session, then routes the user into the app. It binds no seat: an invitation is accepted by
+// the person named on it, at /auth/invitations, so verifying a link proves the address and nothing
+// more. A brand-new invited account has no password yet, so it goes to /auth/welcome to set one;
+// an account that already had a password goes straight in.
 //
 // This is the canonical @supabase/ssr server-side flow: verifyOtp on a request-scoped
 // server client writes the session cookies onto the redirect response. It is identical for
@@ -46,24 +47,14 @@ export async function GET(req: NextRequest) {
             token_hash,
         });
         if (!error) {
-            // Bind any seat invited under the now-VERIFIED email (claim_membership matches
-            // member.invite_email to auth.email() — no bearer token). Idempotent, so running it on
-            // every accept/sign-in is safe; a plain sign-in with no pending seat binds nothing.
-            const { data: claimed, error: claimErr } =
-                await supabase.rpc("claim_membership");
-            if (claimErr) {
-                // A failed bind must not masquerade as a successful one: log it. The session is still valid
-                // (verifyOtp succeeded), so route the user in without an ensemble rather than 500 — the claim
-                // is idempotent and a later sign-in retries it.
-                console.error(
-                    "[invite] claim_membership failed after verifyOtp:",
-                    claimErr.message,
-                );
-            }
-            let first =
-                Array.isArray(claimed) && claimed.length > 0
-                    ? (claimed[0] as { ensemble_id: string }).ensemble_id
-                    : null;
+            // Nothing binds a seat here any more. Verifying a link proves the address; it does not
+            // say the person wants to join. This route used to call claim_membership on every
+            // confirm of any type, which meant a director who knew an address could put its owner in
+            // their ensemble the next time that person clicked a magic link or reset a password. The
+            // decision moved to /auth/invitations, and until it is made no membership exists.
+            //
+            // So `first` is only ever the ensemble a NEW DIRECTOR seeds below, never a claimed seat.
+            let first: string | null = null;
 
             // Onboarding metadata is consumed at this point and must not linger: user_metadata
             // rides inside the access token on every request, so an invited singer would otherwise
@@ -97,12 +88,13 @@ export async function GET(req: NextRequest) {
                 user?.user_metadata?.pending_ensemble_name as string | undefined
             )?.trim();
             if (user && pendingSeedApplies(type, pendingName)) {
-                // Create the ensemble the new director typed at /signup — EVEN IF this same confirm also
-                // claimed a pending invite. Dropping the typed name because they happened to be invited
-                // elsewhere silently loses what they asked for; instead they get both (their claimed seat and
-                // their own ensemble). Guard on "does not already DIRECT an ensemble" (not "has no membership
-                // at all"), so a just-claimed member seat does not suppress the create, while a returning
-                // director never spins up a second one. Clear the name afterward so a later sign-in never recreates it.
+                // Create the ensemble the new director typed at /signup — EVEN IF this address was also
+                // invited elsewhere. Dropping the typed name because someone happened to invite them
+                // silently loses what they asked for; instead they get both (their own ensemble now, and
+                // any invitation still waiting for them to accept). Guard on "does not already DIRECT an
+                // ensemble" (not "has no membership at all"), so an accepted member seat does not suppress
+                // the create, while a returning director never spins up a second one. Clear the name
+                // afterward so a later sign-in never recreates it.
                 const { data: directed } = await supabase
                     .from("member")
                     .select("ensemble_id")
@@ -191,10 +183,39 @@ export async function GET(req: NextRequest) {
                 }
             }
 
+            // Is there a decision waiting? Only asked for the link types that are about arriving. A
+            // recovery or an email change is someone doing an unrelated task, and derailing that with
+            // a join prompt is exactly what this flow avoids; their invitation keeps.
+            let hasPendingInvitations = false;
+            if (
+                type !== "recovery" &&
+                type !== "email" &&
+                type !== "email_change"
+            ) {
+                const { data: pending, error: pendingErr } = await supabase.rpc(
+                    "list_pending_invitations",
+                );
+                if (pendingErr) {
+                    // Not fatal: the session is valid either way, so route them on rather than 500.
+                    // They can reach /auth/invitations directly and the list runs again there.
+                    console.error(
+                        "[invitations] list_pending_invitations failed after verifyOtp:",
+                        pendingErr.message,
+                    );
+                }
+                hasPendingInvitations = Array.isArray(pending)
+                    ? pending.length > 0
+                    : false;
+            }
+
             // invite/recovery established a session without a usable password, so send them to set one;
             // magic-link and signup (which already chose a password at sign-up) go straight in. See
             // confirmDestination (extracted + unit-tested).
-            const dest = confirmDestination(type, firstToken);
+            const dest = confirmDestination(
+                type,
+                firstToken,
+                hasPendingInvitations,
+            );
             return NextResponse.redirect(new URL(dest, url.origin));
         }
     }

@@ -7,7 +7,12 @@
 export function welcomeDest(
     ensembleToken: string | null,
     isReset: boolean,
+    hasPendingInvitations = false,
 ): string {
     if (ensembleToken) return `/e/${ensembleToken}/dashboard`;
-    return isReset ? "/" : "/auth/no-access";
+    // A reset comes before the invitation check on purpose: someone resetting a password asked to do
+    // one thing, and interrupting them with a join decision they did not ask for is the behaviour this
+    // flow deliberately avoids. Their invitation keeps until they go looking for it.
+    if (isReset) return "/";
+    return hasPendingInvitations ? "/auth/invitations" : "/auth/no-access";
 }

@@ -16,10 +16,12 @@ function Welcome() {
     const params = useSearchParams();
     const ensembleId = params.get("e");
     const isReset = params.get("reset") === "1";
-    
-    // A reset (existing account) with no ensemble token goes home, not to no-access; only a stranded invite
-    // goes to no-access. See lib/welcomeDest.
-    const dest = welcomeDest(ensembleId, isReset);
+    const invited = params.get("invited") === "1";
+
+    // A reset (existing account) with no ensemble token goes home, not to no-access. An invited person
+    // binds no seat on confirm any more, so they arrive here with no token and an invitation still to
+    // decide on: `invited` sends them to that decision instead of to no-access. See lib/welcomeDest.
+    const dest = welcomeDest(ensembleId, isReset, invited);
 
     const [password, setPassword] = useState("");
     const [confirm, setConfirm] = useState("");

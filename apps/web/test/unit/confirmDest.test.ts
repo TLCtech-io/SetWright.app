@@ -51,3 +51,48 @@ test("email change lands back on the profile with an acknowledgement flag", () =
         "no ensemble token -> home resolver still flags it",
     );
 });
+
+test("a magic link with an invitation waiting goes to the accept screen", () => {
+    // Nothing binds at confirm any more, so a magic-link sign-in for an invited address arrives with
+    // no token. Without the flag it would land on no-access, which is the wrong story to tell someone
+    // who does have an invitation waiting.
+    assert.equal(
+        confirmDestination("magiclink", null, true),
+        "/auth/invitations",
+    );
+    assert.equal(
+        confirmDestination("magiclink", null, false),
+        "/auth/no-access",
+        "no invitation waiting keeps the existing no-access destination",
+    );
+});
+
+test("an invite link carries the pending flag through the password step", () => {
+    // invite still goes to /auth/welcome first, because the account has no usable password yet. The
+    // flag rides along so the welcome screen knows where to send them afterwards.
+    assert.equal(
+        confirmDestination("invite", null, true),
+        "/auth/welcome?invited=1",
+    );
+    assert.equal(
+        confirmDestination("invite", null, false),
+        "/auth/welcome",
+        "no invitation waiting adds no flag",
+    );
+});
+
+test("an ensemble token suppresses the pending flag: they already have somewhere to land", () => {
+    assert.equal(confirmDestination("invite", "tok", true), "/auth/welcome?e=tok");
+    assert.equal(confirmDestination("signup", "tok", true), "/e/tok/dashboard");
+});
+
+test("recovery and email change are never rerouted to the accept screen", () => {
+    assert.equal(
+        confirmDestination("recovery", null, true),
+        "/auth/welcome?reset=1",
+    );
+    assert.equal(
+        confirmDestination("email_change", null, true),
+        "/?email=changed",
+    );
+});

@@ -206,14 +206,42 @@ export function isHandledActionType(type: string): boolean {
  *
  *  Most types are one message. email_change is not: GoTrue fires the hook ONCE and expects two
  *  emails, with the token pairs crossed. That branch is deliberately not wired yet, see below. */
+/** The app origin to build links against.
+ *
+ *  NOT email_data.site_url. In a hook payload that field is GoTrue's OWN external URL, which on a
+ *  hosted project is https://<ref>.supabase.co/auth/v1. Building against it produced
+ *  https://<ref>.supabase.co/auth/v1/auth/confirm?token_hash=..., which the API gateway answers
+ *  with "No API key found in request". redirect_to is the field that carries where the user should
+ *  land, and GoTrue fills it from the project's Site URL when the caller passes none.
+ *
+ *  Only the origin: a caller may pass a redirectTo with a path, and every link built here appends
+ *  its own. site_url is kept as a last resort so a payload without redirect_to still sends
+ *  something, which is how the local Go-template surface has always behaved.
+ */
+function appOrigin(email_data: HookEmailData): string {
+    for (const candidate of [email_data.redirect_to, email_data.site_url]) {
+        if (!candidate) continue;
+        try {
+            return new URL(candidate).origin;
+        } catch {
+            // Not a URL. Try the next candidate rather than emitting a broken link.
+        }
+    }
+    return "";
+}
+
 export function messagesForHook(payload: HookPayload): HookPlan {
     const { user, email_data } = payload;
     const type = email_data.email_action_type;
-    const siteUrl = email_data.site_url;
+    const siteUrl = appOrigin(email_data);
     const tokenHash = email_data.token_hash;
 
     if (!HANDLED.has(type)) return { ok: true, messages: [] };
-    if (!siteUrl) return { ok: false, reason: "no site_url in the payload" };
+    if (!siteUrl)
+        return {
+            ok: false,
+            reason: "no usable app origin in the payload (redirect_to and site_url)",
+        };
 
     if (type === "email_change") {
         // Not wired. GoTrue sends both token pairs in this single call and the field names are
