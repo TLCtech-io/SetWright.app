@@ -16,8 +16,14 @@ const SAFE_METHODS: ReadonlySet<string> = new Set(["GET", "HEAD", "OPTIONS"]);
 
 // The state-changing surfaces a forged cross-origin POST could hit. /api is the bulk of it;
 // /auth/signout is a mutating POST that lives outside /api (a logout-CSRF would force a sign-out).
-// /auth/confirm is a GET (the email magic-link landing) and is exempt via SAFE_METHODS, so a
-// legitimate cross-origin navigation from the email is never blocked.
+//
+// /auth/confirm is the deliberate exception, and it is worth being exact about why, because it
+// reads at a glance like a harmless email landing. It is not: it claims invited seats, can create
+// and seed an ensemble, and rewrites user metadata. It is also a GET, so SAFE_METHODS exempts it
+// before this list is consulted, and adding it here would change nothing. What protects it is the
+// single-use token it verifies first: every one of those writes sits behind a successful
+// verifyOtp, which a cross-origin caller cannot forge. The GET exemption has to stay, or the link
+// in the email stops working.
 function isProtectedPath(pathname: string): boolean {
     return (
         pathname.startsWith("/api") ||

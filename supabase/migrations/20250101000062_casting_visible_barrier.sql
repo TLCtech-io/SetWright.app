@@ -1,0 +1,33 @@
+-- Mark casting_visible as a security barrier.
+--
+-- The view runs with its owner's rights and bypasses casting's RLS, so its WHERE clause is the
+-- tenant guard and its CASE arms are the confidence guard (002:202-221). Without the barrier the
+-- planner may evaluate a caller-supplied predicate before those quals. There is no way to observe
+-- that through PostgREST, which compiles filters to plain operators and offers no per-row error or
+-- notice to leak through, so this closes a shape rather than a live leak.
+--
+-- The reason this did not ship with the rest of that review is that a barrier view refuses to push
+-- caller quals down unless they are leakproof, and the drafter's hottest read goes through here.
+-- The concern was that the ensemble filter would stop reaching the base scan, turning the castings
+-- CTE into a cross-tenant scan of casting with a per-row SECURITY DEFINER call.
+--
+-- Measured before shipping, on a seeded stack, against the query shape the castings CTE uses
+-- (034:86-92), as an authenticated director:
+--
+--   without the barrier: Index Scan using idx_casting_part
+--                        Index Cond: (c.part_id = part.id)
+--                        Filter: (c.ensemble_id = (InitPlan 1).col1) and auth_member_tier(...)
+--
+--   with the barrier:    Index Scan using idx_casting_ensemble
+--                        Index Cond: (c.ensemble_id = (InitPlan 1).col1)
+--
+-- The ensemble filter reaches the base scan either way, and with the barrier it reaches it as an
+-- index condition rather than a post-filter. The concern does not survive contact with the planner:
+-- `(select ensemble_id from ev)` is uncorrelated, so it becomes an InitPlan evaluated once to a
+-- constant, and the qual reduces to a leakproof equality that is pushdown-safe into a barrier view.
+-- Correlated sub-selects would not be, which is what the general rule is about.
+--
+-- The remaining cost is that quals which are genuinely not pushdown-safe now stay outside the view.
+-- On this view that means the two `in (select ...)` predicates, which already planned as joins
+-- rather than pushdowns before the change.
+alter view public.casting_visible set (security_barrier = true);

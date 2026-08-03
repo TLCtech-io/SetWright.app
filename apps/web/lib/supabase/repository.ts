@@ -2306,7 +2306,7 @@ export function createSupabaseRepository(
             const ensemble_id = await activeEnsemble();
             const normalized = email.trim().toLowerCase();
             // Dead-end pre-check: if this email already belongs to a CLAIMED seat here (a user_id-bound
-            // member), an invite can never bind — claim_membership refuses a second seat per user, so it
+            // member), an invite can never bind — accept_invitation refuses a second seat per user, so it
             // would pend forever. Steer the director to reactivate that seat instead. ensemble_seat_for_email
             // is director-gated and reads auth.users to resolve the email -> seat that a plain query cannot.
             const seatRows = (unwrap(

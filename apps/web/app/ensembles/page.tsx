@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { dataSource } from "@/lib/env";
 import {
     canFoundEnsemble,
+    countPendingInvitations,
     getActiveEnsembleId,
     listMyEnsembles,
 } from "@/lib/ensembles";
@@ -19,6 +20,10 @@ export default async function EnsemblesPage() {
     // Founding a new ensemble needs a credit (invite-first). Hide the create form for a member who has
     // none, rather than showing a form whose submit would be refused.
     const canFound = await canFoundEnsemble();
+    // Seats no longer bind on their own, so an invitation can sit waiting while the person it names
+    // signs in normally and never sees it. This page is where someone with no ensemble lands from the
+    // home resolver, which makes it the one reliable place to say so.
+    const pendingInvitations = await countPendingInvitations();
     // This page is a detour off the nav. When they already have an active ensemble, offer a way
     // back into it — without this, a mis-click strands them here with no return path. The URL
     // carries the public token, so resolve it (and the name) from the membership list.
@@ -51,6 +56,16 @@ export default async function EnsemblesPage() {
                         </div>
                     </div>
                 </div>
+                {pendingInvitations > 0 && (
+                    <p className="status" role="status">
+                        {pendingInvitations === 1
+                            ? "You have an invitation waiting. "
+                            : `You have ${pendingInvitations} invitations waiting. `}
+                        <Link href="/auth/invitations">
+                            Decide whether to join
+                        </Link>
+                    </p>
+                )}
                 <EnsemblesManager
                     ensembles={ensembles}
                     active={active}
