@@ -29,4 +29,8 @@ playwright-report/
 blob-report/
 playwright/.cache/
 
+# User-facing documentation, in progress. Ignored while it is drafted; remove this
+# block and delete docs/_meta/ when the phase completes. See docs/_meta/PLAN.md.
+docs/
+
 .vscode/
