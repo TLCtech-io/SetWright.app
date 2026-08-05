@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 // The "Ensemble" type pairing: Hanken Grotesk (display sans — titles, names, prose) + JetBrains Mono
@@ -91,6 +92,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             the one signed-in page with no nav. */}
                 {children}
                 <SpeedInsights />
+                <Analytics />
             </body>
         </html>
     );
