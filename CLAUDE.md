@@ -26,15 +26,32 @@ scripts/  repo checks that run in CI before the suite.
 
 ## The cardinal rule
 
-The schema is the contract. It is the whole ordered migration set in `supabase/migrations/`, not any one file. `20250101000001_schema.sql` and `20250101000002_rls.sql` lay the foundation and are validated, but they are not the schema in force: later migrations add columns, add tables, and replace policies. Read the set, not the first two files. The domain types in `core` match the schema. Do not write a translation layer between database rows and the domain types, and do not let the two drift. When a shape needs to change, change the schema and the types together.
+The schema is the contract, and it is eight files:
 
-Applied migrations are immutable. Never edit one, add a new migration. Migrations use a hand-maintained `20250101000NNN_name.sql` series, so take the next number by hand. Do not use `supabase migration new`; it stamps a real timestamp and breaks the ordering.
+```
+20250101000001_schema.sql        tables, constraints, indexes
+20250101000002_rls.sql           auth helpers, grants, policies, casting_visible
+20250101000003_guards.sql        trigger functions and their triggers
+20250101000004_hydration.sql     the two hydration functions
+20250101000005_rpc_director.sql  curated write RPCs
+20250101000006_rpc_member.sql    self-service RPCs a member calls on their own rows
+20250101000007_rpc_platform.sql  provisioning, invites, founding credits, admin
+20250101000008_comments.sql      catalog comments
+```
+
+Every object is declared exactly once, at its final state, so the file you grep is the file in force. Read them in order: the auth helpers in 002 are what break the RLS recursion, and everything above 002 depends on them.
+
+The domain types in `core` match the schema. Do not write a translation layer between database rows and the domain types, and do not let the two drift. When a shape needs to change, change the schema and the types together.
+
+Applied migrations are immutable, the baseline included. Never edit one, add a new migration. The series is hand-maintained `20250101000NNN_name.sql`, so take the next number by hand, starting at 009. Do not use `supabase migration new`; it stamps a real timestamp and breaks the ordering. A hook blocks edits to all eight baseline files.
+
+`supabase/migrations/_archive/` holds the 64 migrations this baseline replaced. They are never applied: the Supabase CLI does not recurse into subdirectories, and the repo scripts that enumerate migrations read the directory non-recursively. They are kept because they are the only record of why the schema is shaped the way it is, and a good deal of that is not recoverable from the result. Read them when you need a reason, not when you need the current state. Several of their headers were already contradicted by later migrations before the archive was made, so treat any one file as intent on the day it was written.
 
 Pitch and key conversion lives in exactly one module, `core/src/pitch.ts`. Pitch is MIDI, middle C is 60. Key is fifths plus mode. Tempo is bpm. No conversion logic anywhere else.
 
 ## The boundary
 
-SQL reduces; TypeScript decides. There are two hydration functions, both defined in `supabase/migrations/`: `hydrate_draft_input` (redeclared through migration 034) and `hydrate_setlist_locks`. They do set-based work with fixed predicates: resolve policy, pull the active pool, project the rows the drafter needs. They do not gate. Every gate (feasibility, readiness, context) runs in `core`, because the shortfall explains a drop only for songs the core sees. The only filters SQL applies are `status = 'active'` and, on the member pool, `is_singing`.
+SQL reduces; TypeScript decides. There are two hydration functions, both in `20250101000004_hydration.sql`: `hydrate_draft_input` and `hydrate_setlist_locks`. Their `search_path` is pinned to `pg_catalog, public, pg_temp`, which differs from every other function in the schema because their bodies name tables unqualified. Redeclaring one resets its configuration, so a redeclaration has to carry that exact value. They do set-based work with fixed predicates: resolve policy, pull the active pool, project the rows the drafter needs. They do not gate. Every gate (feasibility, readiness, context) runs in `core`, because the shortfall explains a drop only for songs the core sees. The only filters SQL applies are `status = 'active'` and, on the member pool, `is_singing`.
 
 Queries run RLS-scoped as the signed-in member. The hydration functions are called with the user's client, never the service-role key. Tenancy is enforced at this boundary, so `core` carries no `ensemble_id` and stays tenant-agnostic.
 
