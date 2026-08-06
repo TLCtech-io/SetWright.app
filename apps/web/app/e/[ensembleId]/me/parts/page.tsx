@@ -14,11 +14,13 @@ export default async function MyPartsPage({
     const repo = getRepository();
     const me = await getMyMembership(ensembleId);
     // The member's own range sizes a solo line against what they can actually sing; coverage tells
-    // them whether each part has backup (and who else covers it).
-    const [parts, member, coverage] = await Promise.all([
+    // them whether each part has backup (and who else covers it). Settings carry the ensemble's
+    // confidence visibility, which decides who the line below can honestly promise sees the read.
+    const [parts, member, coverage, settings] = await Promise.all([
         repo.listMyCastings(),
         me ? repo.getMember(me.memberId) : Promise.resolve(undefined),
         repo.listMyPartCoverage(),
+        repo.getEnsembleSettings(),
     ]);
 
     return (
@@ -32,7 +34,10 @@ export default async function MyPartsPage({
                     <div className="sub">
                         The songs you&rsquo;re cast on, weakest first. Open a
                         part for its pitch, key, and tempo, and set how solid
-                        you feel. Only you and your director see your read.
+                        you feel.{" "}
+                        {settings.confidenceVisibility === "shared"
+                            ? "Your whole group sees your read, not just your director."
+                            : "Only you and your director see your read."}
                     </div>
                 </div>
             </div>

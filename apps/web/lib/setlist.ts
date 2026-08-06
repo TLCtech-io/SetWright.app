@@ -275,9 +275,11 @@ export async function loadSetlist(
 }
 
 // The frozen, member-safe view of a setlist. A member must NEVER run the drafter (loadSetlist): it
-// would return the bench, drops, feasibility shortfalls, and the whole active-song catalog. Per
-// migration 051 a member reads only the frozen snapshot — the performed order, the published order,
-// or (when the director is sharing) the live draft's stored order. getPublishedSet returns
+// would return the bench, the drops and the shortfall, which are the director's working state and
+// exist nowhere in the database. A member reads only the frozen snapshot: the performed order, the
+// published order, or (when the director is sharing) the live draft's stored order. The catalog is
+// withheld for shape rather than secrecy, since every active song is member-readable through
+// song_read anyway. getPublishedSet returns
 // performed-or-published; getSharedDraft returns a shared live draft. Between them they cover exactly
 // what RLS makes a member-visible set; neither means the set is not member-visible (404). The payload
 // shape mirrors loadSetlist's performed branch, so the client renders it uniformly (no pins, no
