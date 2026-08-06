@@ -7,11 +7,10 @@
 --   4. director-side invite helpers.
 --   5. invitee-side invitation handling, plus the unauthenticated resend renewal.
 --
--- Ordering notes. gen_public_id is the one object in this file that other files need: six tables in
--- 001 take `default public.gen_public_id()`, and a default expression is parsed at add-column time,
--- so the function must already exist when 001 runs. It is declared here because this file owns the
--- provisioning surface, and with `create or replace` it is safe for 001 to declare the same body
--- first. If neither file declares it before those defaults, the baseline will not apply.
+-- Ordering notes. gen_public_id belongs to this file by subject but is declared in 001, and only
+-- there. Six tables in 001 take `default public.gen_public_id()`, and a default expression is
+-- parsed at add-column time, so the function has to exist before the first of them. This file
+-- keeps a note where the declaration would otherwise sit, and nothing more.
 --
 -- Everything else here depends only on lower-numbered files: auth_member_tier and
 -- auth_is_platform_admin come from 002, prune_member_coverage from 005, and the tables
@@ -212,9 +211,10 @@ grant  execute on function public.grant_founding_credit(uuid) to authenticated;
 -- create the ensemble from Your ensembles. Admin gated and idempotent, exactly like
 -- grant_founding_credit.
 --
--- Resolve the id against auth.users, which is canonical, not app_user.email. That mirror is only set
--- on insert and lags an email change, so looking it up there would strand the admin, or with a reused
--- address grab the wrong row. The definer owner is what reads auth.users; `limit 1` guards against a
+-- Resolve the id against auth.users, which is canonical, not app_user.email. The mirror is kept
+-- current by handle_user_email_change (003) on an auth.users email update, so it is not usually
+-- stale, but it is a mirror maintained by a trigger rather than the source of truth. Reading the
+-- source directly costs nothing and does not depend on that trigger firing. The definer owner is what reads auth.users; `limit 1` guards against a
 -- duplicate. Returns true when an account was found and its credit ensured, false when none has that
 -- address.
 create or replace function public.grant_founding_credit_by_email(p_email text)
@@ -337,7 +337,7 @@ grant  execute on function public.create_ensemble_seeded(text, text) to authenti
 -- Director-side invite helpers
 -- ----------------------------------------------------------------------------
 
--- Does this email's account already hold a seat in this ensemble, and is it active or archived? A
+-- Does this email's account already hold a seat in this ensemble, and is it active or inactive? A
 -- person can hold only one seat per ensemble, so inviting an address that already has one is a dead
 -- end: the invite would pend forever with no feedback. This lets the invite flow detect that up front
 -- and steer the director to reactivate the existing seat instead.
@@ -403,8 +403,13 @@ grant  execute on function public.set_member_status(uuid, uuid, text) to authent
 -- accept screen would have nothing to render.
 --
 -- Every one of them keys on auth.email() rather than on an argument, so a caller can only see or act
--- on invitations addressed to their own GoTrue-confirmed address. The ensemble id argument narrows
--- that set; it cannot widen it.
+-- on invitations addressed to their own address. The ensemble id argument narrows that set; it
+-- cannot widen it.
+--
+-- "Confirmed" holds for the read and the bind, not for the refusal. list_pending_invitations and
+-- accept_invitation both require a confirmed email; decline_invitation checks only that the address
+-- matches. So an unconfirmed pre-registration on someone else's address can decline that person's
+-- invitations, and since nothing clears declined_at the refusal is permanent.
 
 -- What the invitee may see. Same eligibility rules the bind enforces, so the screen never offers
 -- something accept_invitation would then refuse.
@@ -508,7 +513,10 @@ revoke all on function public.accept_invitation(uuid) from public;
 grant  execute on function public.accept_invitation(uuid) to authenticated;
 
 -- Refusing keeps the row and stamps it, so the director sees the outcome on the roster instead of an
--- invitation that appears to be still waiting. The seat itself stays unclaimed and re-invitable.
+-- invitation that appears to be still waiting. The seat stays unclaimed, but it is not re-invitable:
+-- nothing clears declined_at, and both list_pending_invitations and accept_invitation require it to
+-- be null. A director re-invite bumps invited_at and reports success while the invitee never sees
+-- the invitation. Deleting the seat is the only way back.
 create or replace function public.decline_invitation(p_ensemble uuid)
 returns boolean
 language sql
@@ -532,8 +540,10 @@ grant  execute on function public.decline_invitation(uuid) to authenticated;
 
 -- Renew and report a PENDING member invitation for this email. The unauthenticated self-serve resend
 -- calls it, so a resend goes only to an address that actually has a waiting invite and is never an
--- open relay to arbitrary inboxes. A member_invite row exists only while a seat is pending, deleted
--- on accept and on seat removal, so a row for this address is the pending signal.
+-- open relay to arbitrary inboxes. A member_invite row is deleted on accept and on seat removal, so
+-- a row means the seat was invited and never claimed. It does not mean the invite is still live: a
+-- declined row also stays, which is why the eligibility predicate below tests declined_at is null
+-- rather than treating the row's existence as the signal.
 --
 -- For every eligible seat under the address it bumps invited_at to now, so a seat that had aged past
 -- the 14-day bind window can bind again on accept. That matches the director resend, which also

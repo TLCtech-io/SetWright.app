@@ -9,9 +9,10 @@
 --
 -- All of them are SECURITY INVOKER. That is the point: RLS still scopes every touched row to
 -- the caller's ensemble and tier, so these functions curate a multi-statement write without
--- widening anyone's reach. The three that need a tier check beyond what RLS gives
--- (perform_setlist, mark_songs_rehearsed) check auth_member_tier explicitly, because a
--- SECURITY INVOKER update that RLS filters out is a silent zero-row no-op, not an error.
+-- widening anyone's reach. Two of them, perform_setlist and mark_songs_rehearsed, check
+-- auth_member_tier explicitly on top of that, because a SECURITY INVOKER update that RLS
+-- filters out is a silent zero-row no-op rather than an error. Every other RPC here relies
+-- on RLS alone.
 --
 -- Ordering inside this file: prune_member_coverage comes first because save_member calls it.
 -- set_member_status, defined elsewhere, calls it too. PL/pgSQL does not resolve callees at
@@ -34,7 +35,10 @@
 
 -- Drop a departing member's castings and RSVPs, then promote the strongest remaining cover to
 -- lead on any part they led. Ranking is solid, then shaky, then learning (a null confidence
--- ranks as solid), then earliest cast, then lowest id as a deterministic final tiebreak.
+-- ranks as solid), then created_at, then lowest id as a deterministic final tiebreak. Read the
+-- created_at term carefully: set_song_casting rewrites a song's castings wholesale, so it stamps
+-- when the director last saved that song rather than when anyone was cast to a part. In the common
+-- case every candidate shares a timestamp and the id decides.
 --
 -- Destructive and irreversible. The deletes carry no date predicate, so this removes the
 -- member's entire casting and availability history, not just their future commitments.
@@ -962,8 +966,9 @@ grant execute on function public.set_breaks(uuid, timestamptz, jsonb) to authent
 --
 -- The snapshot MUST be written in the same UPDATE that flips status. setlist_immutable_guard
 -- (003) raises on any update to an already-performed row, so a second UPDATE from the caller
--- never lands. At this statement old.status is still 'draft' and app.perform_writer vouches for
--- it, so the guard passes. p_snapshot may be null from an older client; reads then fall back to
+-- never lands. At this statement old.status is whatever non-performed status the set holds,
+-- 'draft' or 'final'. The guard passes because old.status is not yet 'performed' and
+-- app.perform_writer vouches for the write. p_snapshot may be null from an older client; reads then fall back to
 -- live, which is safe.
 --
 -- The order is deduped on first occurrence and then capped at 512, so a duplicate cannot bump a

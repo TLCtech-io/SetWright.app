@@ -13,14 +13,17 @@
 --
 -- Both are SECURITY INVOKER. They confer no privilege: base-table RLS is
 -- re-applied as the signed-in caller, and castings read through casting_visible,
--- which carries the confidence privacy rule. Call them with the user's client,
--- never the service-role key, or tenant isolation is gone.
+-- which carries the confidence privacy rule. Call them with the user's client. The
+-- service-role key is not a way around that and not a hazard either: neither function
+-- grants execute to service_role, so calling one that way is a permission error rather
+-- than a cross-tenant read.
 --
 -- Ordering. LANGUAGE sql bodies are parse-analyzed at creation, so every table
 -- named below must already exist (001) and casting_visible must already be
--- defined (002). Nothing in files 005 through 008 depends on these, so this file
--- could sit anywhere after 002; it sits here because the drafter is the point of
--- the schema and reads best next to the policies that constrain it.
+-- defined (002). It also has to precede 008, which comments on both functions by
+-- signature. Files 005 through 007 reference neither, so anywhere between 002 and 008
+-- would work; it sits here because the drafter is the point of the schema and reads
+-- best next to the policies that constrain it.
 --
 -- search_path. Both pin `pg_catalog, public, pg_temp`, which differs from every
 -- other function in the baseline (`pg_catalog, pg_temp`). These two name their
@@ -43,8 +46,9 @@
 -- back to the type.
 --
 -- The returned JSON maps onto core's DraftInput almost field for field. The API
--- mapper folds excludeTags / preferTags into options.context; everything else
--- lines up by name.
+-- mapper folds excludeTags, preferTags and requireTags into options.context, since
+-- DraftInput has no top-level field for any of the three. event, members,
+-- availability, songs, parts and castings pass through by name.
 --
 -- director_assessed reads through casting_visible, which exposes it to directors
 -- only. A non-director's draft sees null and falls back to the self-report, the

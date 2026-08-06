@@ -134,7 +134,8 @@ grant select, insert, update, delete on all tables in schema public to authentic
 -- A blanket table-level UPDATE plus that policy would let anyone PATCH is_platform_admin = true
 -- on themselves through PostgREST and self-promote. Column privileges are checked independently
 -- of RLS, so pin authenticated's UPDATE to the two self-editable columns. The admin flag is then
--- unwritable by authenticated at all, leaving service_role and the SQL bootstrap. The app never
+-- unwritable by authenticated at all. It is not writable by service_role either, which holds no
+-- grant on app_user and cannot even read it, so the only way in is a superuser connection. The app never
 -- PATCHes app_user directly (profile edits go through the update_my_profile definer RPC), so this
 -- narrows nothing the app relies on.
 revoke update on public.app_user from authenticated;
@@ -316,7 +317,9 @@ with check (public.auth_member_tier(ensemble_id) = 'director');
 -- member_invite: director-only read AND write. The invite email and token hash live here
 -- precisely so that member_read cannot expose a peer's pending invite address. RLS is the
 -- enforcement, not an app-layer projection; a raw PostgREST query gets nothing.
--- claim_membership is SECURITY DEFINER and reads through the bypass.
+-- The invitee's own view of their invitations comes from definer functions in 007 that read
+-- through this policy: list_pending_invitations, accept_invitation, decline_invitation and
+-- refresh_pending_invite. Each keys on the caller's own confirmed address rather than an argument.
 create policy member_invite_read on public.member_invite
 for select using (public.auth_member_tier(ensemble_id) = 'director');
 create policy member_invite_write on public.member_invite

@@ -159,8 +159,13 @@ $$;
 -- parent would let a fresh row land inside a set that is already performed.
 --
 -- A cascade from deleting a NON-performed parent still passes: the parent row is gone
--- by then, so the lookup finds nothing and v_status is null. A performed parent can
--- never be deleted at all, so its children are never reached by cascade.
+-- by then, so the lookup finds nothing and v_status is null.
+--
+-- A performed parent is not reachable that way, but its children are reachable from the other
+-- side. Deleting a song cascades into setlist_item, and if any of those rows belongs to a
+-- performed set this guard fires and aborts the delete. The practical effect, which is easy to
+-- miss from here: no song that has ever appeared in a performed set can be deleted, and the
+-- director sees an immutability error rather than anything about the song.
 create or replace function public.guard_performed_child()
 returns trigger
 language plpgsql
@@ -399,9 +404,12 @@ for each row execute function public.guard_member_binding();
 -- ----------------------------------------------------------------------------
 -- updated_at maintenance
 --
--- moddatetime comes from the extension created in 001. Every table with an updated_at
--- column gets one; the list is explicit rather than derived from the catalog so adding
--- a table is a deliberate act.
+-- moddatetime comes from the extension created in 001. The list is explicit rather than derived
+-- from the catalog, so adding a table is a deliberate act. It covers 17 of the 20 tables that
+-- carry an updated_at column. attendance, prep_target and rehearsal_item are not in it and have
+-- no trigger, so their updated_at stays at the insert default forever. That is invisible today
+-- because all three are written only by delete-then-insert, and it breaks the first time anything
+-- issues a partial UPDATE against them.
 -- ----------------------------------------------------------------------------
 
 do $$
