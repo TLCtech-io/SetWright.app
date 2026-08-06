@@ -17,8 +17,22 @@
 #
 # To change scope, edit the case patterns below.
 #
+# Deliberate override: create .claude/.allow-baseline-edit and the guard stands down until
+# it is removed. It is a file rather than an environment variable on purpose. Hooks run as
+# subprocesses of the agent and inherit its environment, so a variable exported in a shell
+# never reaches here, while a file on disk always does. The override is visible in
+# `git status`, survives nothing, and has to be deleted by hand, which is the point.
+#
+# While the marker exists the guard is off for every file it would otherwise protect,
+# baseline and archive alike. It cannot tell a comment edit from a schema change.
+#
 
 set -uo pipefail
+
+if [ -f "${CLAUDE_PROJECT_DIR:-.}/.claude/.allow-baseline-edit" ]; then
+    echo "guard-applied-migration: standing down, .claude/.allow-baseline-edit is present." >&2
+    exit 0
+fi
 
 input=$(cat)
 file=$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty')

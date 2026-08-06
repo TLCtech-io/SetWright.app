@@ -28,7 +28,10 @@
 --   - public_id is the one identifier the app mints, and the only one that appears
 --     in a URL. The uuid stays the join key everywhere below the routing layer.
 --   - All timestamps are timestamptz. created_at / updated_at on every table with a
---     lifecycle; updated_at is maintained by moddatetime triggers in file 3.
+--     lifecycle. updated_at is maintained by moddatetime triggers in file 3 on 17 of the
+--     20 tables that carry it. attendance, prep_target and rehearsal_item have no trigger,
+--     so their updated_at never moves off the insert default. Harmless today because all
+--     three are written only by full replace, and a trap for the first partial UPDATE.
 --   - Provenance: created_by / updated_by reference app_user, on delete set null, so
 --     removing a user never breaks the audit trail. app_user, the identity table,
 --     carries no provenance of its own. The tables added after the first cut
@@ -288,7 +291,7 @@ create table part (
     sort_order    smallint not null default 0,
 
     unique (ensemble_id, id),
-    unique (ensemble_id, song_id, id),  -- target for performance_soloist's part-to-song bind
+    unique (ensemble_id, song_id, id),  -- backs nothing now; see the note above performance_soloist
     foreign key (ensemble_id, song_id)
     references song(ensemble_id, id) on delete cascade,
     foreign key (ensemble_id, voice_part_id)
@@ -432,8 +435,10 @@ create table tag (
     id          uuid primary key default gen_random_uuid(),
     ensemble_id uuid not null references ensemble(id),
     name        text not null,                   -- 'gospel', 'holiday', 'ballad', 'uptempo'
-    category    text                             -- what the tag is, so the sequencer knows what to do with it:
-    -- mood/groove/genre diversify adjacency, content gates, occasion is ignored
+    category    text                             -- read in one place only: the sequencer treats
+    -- mood, groove and genre as feel and diversifies adjacency on them. occasion and content have
+    -- no behaviour anywhere and are labels. Content gating is song.is_explicit against
+    -- event.allows_explicit, nothing to do with this column.
     check (category is null or category in ('mood','groove','genre','occasion','content')),
     sort_order  smallint not null default 0,
     created_at  timestamptz not null default now(),
@@ -477,7 +482,11 @@ create table event_tag (
     foreign key (ensemble_id, tag_id)   references tag(ensemble_id, id)   on delete cascade
 );
 
--- Standing per-type rules, mainly exclusions a type should always enforce.
+-- Per-type tag rules, mainly exclusions. A prefill, not a constraint. Nothing server-side reads
+-- this table when an event is saved or drafted: save_event builds event_tag from its own arguments
+-- alone. The event form copies these onto a new event on the first type pick, or on demand from the
+-- Apply button, and every copied tag is editable afterwards. Changing an existing event's type, an
+-- import, or a seed applies none of them.
 create table event_type_tag (
     ensemble_id   uuid not null references ensemble(id),
     event_type_id uuid not null,
@@ -569,8 +578,10 @@ on program_item (program_id) where (pin = 'close');
 --   draft_order     the snapshot a member sees while share_draft is on. Kept fresh on
 --                   every order change. It exists so a member never runs the drafter,
 --                   which would expose the whole event pool.
---   published_order the frozen order at publish time. Moves with published_at, hence
---                   the paired check.
+--   published_order the order members read for a published set. Paired with published_at by
+--                   check constraint, both null or both set. Not frozen at publish despite the
+--                   name: the app rewrites it, and draft_order with it, on every order-changing
+--                   edit until the set is performed.
 create table setlist (
     id          uuid primary key default gen_random_uuid(),
     ensemble_id uuid not null references ensemble(id),
@@ -663,8 +674,10 @@ create table setlist_break (
 -- reinserts parts) or removing a member silently erased that member's historical solo
 -- appearance. A live probe confirmed it. History must not depend on the present.
 -- The setlist FK stays, and a performed setlist is itself protected by the
--- immutability guards in file 3; the ensemble FK stays so a tenant teardown still
--- cleans up.
+-- immutability guards in file 3. The ensemble FK stays too, but note what it does: like all 23
+-- ensemble references in this schema it is no-action, so it blocks a tenant delete rather than
+-- cascading through one. There is no delete-based teardown path here; retiring a tenant is
+-- ensemble.status = 'archived'.
 create table performance_soloist (
     id          uuid primary key default gen_random_uuid(),
     ensemble_id uuid not null references ensemble(id),
@@ -779,9 +792,12 @@ create table member_invite (
     foreign key (ensemble_id, member_id) references member(ensemble_id, id) on delete cascade
 );
 
--- At most one pending seat per email per ensemble, the backstop behind the app's
--- friendly pre-check. Every row here is pending by construction, so unlike the old
--- index on member this needs no partial predicate.
+-- One invite row per email per ensemble, pending or declined alike. The app pre-checks
+-- member_invite for the same address on a different seat and returns a friendly duplicate
+-- message; this index is the backstop when it does not. The index has no partial predicate, and
+-- that is deliberate rather than an oversight now that declined rows persist: a declined row keeps
+-- occupying the address slot. Every consumer filters declined_at is null. Removing the seat
+-- deletes the row and frees the slot.
 create unique index member_invite_one_per_email
 on member_invite (ensemble_id, lower(invite_email));
 

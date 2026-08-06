@@ -87,8 +87,11 @@ grant  execute on function set_my_availability(uuid, text) to authenticated;
 -- to resolve its casting id in one round trip and write it in a second. A concurrent
 -- director casting save delete+reinserts those rows with fresh ids, so the pre-resolved id
 -- went stale and the member's write updated zero rows and was silently dropped. Resolving
--- by (part, caller's member) inside a single statement always hits the current row, because
--- the director's delete+insert is atomic with respect to it.
+-- by (part, caller's member) inside a single statement closes that window: there is no id to go
+-- stale between round trips. It does not make the write certain. A member update that overlaps a
+-- director's casting save can still land on a row the save is about to replace, and the reported
+-- confidence is lost with it. What the single statement buys is that the common case stops
+-- failing, not that the race is gone.
 create or replace function set_my_confidence(p_part uuid, p_confidence text)
 returns void
 language plpgsql

@@ -28,7 +28,8 @@ comment on schema public is 'standard public schema';
 
 comment on column app_user.is_platform_admin is
 'Authorizes the /admin surface and the admin-invite path only. It confers no cross-tenant data '
-'access: no policy references it. Writable by service_role and direct SQL alone. authenticated '
+'access: no policy references it. Writable only from a superuser connection, meaning direct SQL as '
+'postgres. service_role cannot write it and cannot read app_user at all. authenticated '
 'holds update on email and display_name only, and that column grant, not any policy, is what '
 'stops a user PATCHing this flag onto their own row; founding_credits inherits the same '
 'protection. A permission-denied error on a new self-editable column is fixed by adding that one '
@@ -47,8 +48,10 @@ comment on column app_user.founding_credits is
 comment on table event_type_tag is
 'Standing per-type tag rules, mainly exclusions. Nothing server-side applies them to an event. '
 'save_event resolves event_tag from its own arguments and never reads this table. The copy '
-'happens in the new-event form, and only while the form is untouched, so changing an existing '
-'event type, an import, a seed, or any other non-form caller gets none of it. Treat that as a '
+'happens in the event form: automatically on a new event''s first type pick while the form is '
+'untouched, and on demand from the Apply button. Every copied tag is editable afterwards, and '
+'changing an existing event''s type, an import, a seed, or any other non-form caller applies none '
+'of them. Treat that as a '
 'known gap rather than a contract: a rule set here can be silently absent from an event.';
 
 
@@ -177,7 +180,8 @@ comment on policy setlist_break_read on setlist_break is
 comment on function guard_member_binding() is
 'The only code that can bind member.user_id is a security definer function owned by postgres, '
 'because this guard exempts any current_user outside authenticated and anon. Today that is '
-'accept_invitation, whose ability to write user_id rests on that ownership and nothing else, so '
+'accept_invitation on the invitee path and create_ensemble_seeded on the founder path. Both rest '
+'on that ownership and nothing else, so '
 'declaring it invoker, or adding an invoker RPC that joins a seat, starts raising what looks like '
 'an RLS error. The improvisation to refuse is routing the insert through the service-role client: '
 'the guard passes and the invitee consent model is gone.';
@@ -186,9 +190,9 @@ comment on function hydrate_draft_input(uuid) is
 'The search path pin on this function is pg_catalog, public, pg_temp, not the pg_catalog, pg_temp '
 'that every other pinned function here uses, because the body names its tables unqualified. A '
 'redeclaration resets the function configuration and loses the pin unless it carries the set '
-'clause with this exact value. CI verifies only that a pin exists, never what it is, and npm run '
-'verify never touches SQL, so the whole drafting surface fails at runtime instead: relation '
-'"event" does not exist.';
+'clause with this exact value. Nothing offline catches a wrong value: npm run verify parse-checks '
+'every migration but reads no pin, and the CI pins check tests only that a pin is present. The '
+'whole drafting surface fails at runtime instead: relation "event" does not exist.';
 
 comment on function hydrate_setlist_locks(uuid) is
 'Same search path pin as hydrate_draft_input, pg_catalog, public, pg_temp, and for the same '
