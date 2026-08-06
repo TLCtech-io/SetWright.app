@@ -114,8 +114,9 @@ function ChartLink({ chartRef }: { chartRef: string | null }) {
 // for solos how the line sits against their own range.
 //
 // The self-confidence select writes only the member's own casting row (PUT .../me/confidence
-// -> set_my_confidence) optimistically, rolling back on failure. Only the member and their
-// director ever see this value. In-flight writes are tracked PER part id and re-entrancy is
+// -> set_my_confidence) optimistically, rolling back on failure. Who else sees the value depends
+// on the ensemble's confidence_visibility: the member and the director always, every active
+// member when it is 'shared'. In-flight writes are tracked PER part id and re-entrancy is
 // blocked with an early return rather than by disabling the just-changed <select> (disabling
 // the focused control would drop keyboard/AT focus to <body>). Errors are per row.
 export function MyParts({

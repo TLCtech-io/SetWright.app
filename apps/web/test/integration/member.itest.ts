@@ -2,7 +2,7 @@
 // (display name + range), and the RPC's self-guard means passing someone else's member id is
 // a silent no-op (no privilege escalation). Ben is a plain member of Harmony Collective (A).
 import { createSupabaseRepository } from "../../lib/supabase/repository";
-import { assert, signInAs, sql } from "./helpers";
+import { assert, signInAs, sql, sqlAsPostgres } from "./helpers";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 const ANA_UID = "00000000-0000-0000-0000-0000000000a1";
@@ -122,6 +122,61 @@ export async function run(): Promise<void> {
     assert(
         !!forge,
         "a member cannot write another member's availability (RLS denies)",
+    );
+
+    // --- peers are visible, and that is the product -------------------------------
+    // Availability, attendance and casting assignments are peer-readable inside an ensemble on
+    // purpose: members need to know who will be at Thursday's rehearsal, and shared turnout is the
+    // group's own pressure on showing up. This block exists because narrowing any of those policies
+    // fails SILENTLY. attendanceGroups buckets a member with no visible row as "pending", so a
+    // self-or-director policy would render "who's coming" with every peer under "No reply" and throw
+    // nothing. Narrow one of these and this test fails instead of the UI quietly lying.
+    // Casting is pinned separately in isolation.itest.ts, which asserts a non-director reads a peer's
+    // casting row while confidence and director_assessed come back null.
+    const concertId = (
+        (
+            await ben
+                .from("event")
+                .select("id")
+                .eq("ensemble_id", ensA)
+                .eq("name", "Summer concert")
+                .single()
+        ).data as { id: string }
+    ).id;
+
+    // Named explicitly rather than reusing the event picked above: the seed gives all four Ensemble A
+    // members an 'in' row for the concert and none for the Winter showcase.
+    const roll = (
+        await ben
+            .from("availability")
+            .select("member_id, status")
+            .eq("event_id", concertId)
+    ).data as { member_id: string; status: string }[] | null;
+    assert(
+        !!roll?.some((r) => r.member_id !== benId),
+        "a member reads a peer's availability row, not only their own",
+    );
+    assert(
+        roll?.find((r) => r.member_id === anaId)?.status === "in",
+        "the peer's row carries that peer's real status (Ana is seeded 'in')",
+    );
+
+    // Attendance is not seeded, so record one for a peer as the director would, then read it back as
+    // the member. The write is the director's job; the read is what this pins.
+    sqlAsPostgres(
+        `insert into public.attendance (ensemble_id, member_id, event_id, present)
+         values ('${ensA}', '${anaId}', '${concertId}', true)
+         on conflict (member_id, event_id) do update set present = excluded.present;`,
+    );
+    const turnout = (
+        await ben
+            .from("attendance")
+            .select("member_id, present")
+            .eq("event_id", concertId)
+    ).data as { member_id: string; present: boolean }[] | null;
+    assert(
+        !!turnout?.some((r) => r.member_id === anaId && r.present),
+        "a member reads a peer's recorded attendance",
     );
 
     // --- my parts + self-confidence (set_my_confidence) --------------------------

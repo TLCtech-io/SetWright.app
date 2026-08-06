@@ -29,9 +29,11 @@ export async function GET(_req: Request, { params }: Params) {
     const repo = await repoForRoute(ensembleId);
     if (repo instanceof NextResponse) return repo;
 
-    // Directors get the live, editable draft. A member must NEVER run the drafter — it would expose
-    // the bench, drops, feasibility shortfalls, and the whole event pool — so they read only the
-    // frozen snapshot (performed/published order, or a shared live draft), per migration 051.
+    // Directors get the live, editable draft. A member must NEVER run the drafter: it would expose
+    // the bench, the drops and the shortfall, which are the director's working state and are
+    // computed rather than stored. Members read the frozen snapshot instead (performed or published
+    // order, or a shared live draft). Note what is NOT the reason: the event pool itself, meaning
+    // RSVPs and who covers which part, is peer-visible by design.
     const me = await getMyMembership(ensembleId);
     const res =
         me?.tier === "director"
